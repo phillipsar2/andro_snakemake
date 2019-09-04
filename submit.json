@@ -1,23 +1,25 @@
 {
     "__default__" :
     {
-      "p" : "med",
-      "nCPUs": "8",
+      "p" : "med2",
+      "mem" : "16G",
       "time" : "7-00:00"
     },
     "bwa_map" :
     {
-      "nCPUs": "24",
-      "p" : "bigmemh"
+      "mem": "64G",
+      "p" : "med2"
     },
     "samtools_sort" :
     {
-      "p" : "bigmemm",
+      "p" : "high2",
+      "mem" : "20G",
       "time" : "2-00:00"
     },
-    "find_coverage" :
+    "bed_coverage" :
     {
-      "p" : "bigmemm",
+      "p" : "med2",
+      "mem" : "4G",
       "time" : "1-00:00"
     }
 }
