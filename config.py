@@ -4,7 +4,7 @@
 
 
 # Add read groups
-addrg_in = "data/sorted_bam/{sample}.merge.bam"
+addrg_in = "data/mergensort/{sample}.merge.sorted.bam"
 
 # MarkDuplicates
 #mark_in = "data/sorted_bam/{sample}.merge.bam"

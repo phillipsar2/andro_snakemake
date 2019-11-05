@@ -1,11 +1,43 @@
 # Proccessing merged bam files
 
+rule samtools_resort:
+    input:
+        "data/sorted_bam/{sample}.merge.bam"
+    output:
+        temp("data/mergensort/{sample}.merge.sorted.bam")
+    params:
+        "-m 16G"
+#        tmp = "/scratch/aphillip/sort_bam/{sample}"
+    run:
+        shell("samtools sort {input} > {output}")
+        #shell("rm {sample}.merge.bam")
+#    wrapper:
+#        "0.38.0/bio/samtools/sort"
+
+rule samtools_bamtosam:
+    input:
+        "data/mergensort/{sample}.merge.sorted.bam"
+    output:
+        temp("data/mergensort/{sample}.merge.sorted.sam")
+    run:
+        shell("samtools view -h -o {output} {input}")
+
+
+rule samtools_samtobam:
+    input:
+        "data/mergensort/{sample}.merge.sorted.sam"
+    output:
+        "data/mergensort/{sample}.NEW.bam"
+    run:
+#        shell("samtools view -Sb {input} > {output}")
+        shell("samtools view -bS {input} > {output}")
+
 rule add_rg:
     input:
-        config.addrg_in,
+        "data/mergensort/{sample}.NEW.bam"
     output:
         bam = temp(touch("data/interm/addrg/{sample}.rg.bam")),
-        index = temp(touch("data/interm/addrg/{sample}.rg.bai"))
+        #index = temp(touch("data/interm/addrg/{sample}.rg.bai"))
     params:
         tmp = "/scratch/aphillip/addrg/{sample}"
         #sample = "{sample}",
@@ -16,10 +48,10 @@ rule add_rg:
         -O={output.bam} \
         -RGID=4 \
         -RGLB=lib1 \
-    	-RGPL=illumina \
-    	-RGPU=unit1 \
-    	-RGSM={{sample}} \
-    	--TMP_DIR {params.tmp} \
+        -RGPL=illumina \
+        -RGPU=unit1 \
+        -RGSM={{sample}} \
+        --TMP_DIR {params.tmp} \
         --CREATE_INDEX=true")
         shell("rm -rf {params.tmp}")
 
@@ -30,8 +62,8 @@ rule mark_dups:
         config.mark_in
     output:
         # Make bam and index temporary
-        bam = temp(touch("data/interm/mark_dups/{sample}.dedup.bam")),
-        index = temp(touch("data/interm/mark_dups/{sample}.dedup.bai")),
+        bam = "data/interm/mark_dups/{sample}.dedup.bam",
+        index = "data/interm/mark_dups/{sample}.dedup.bai",
         metrics = "qc/mark_dup/{sample}_metrics.txt"
     params:
         tmp = "/scratch/aphillip/mark_dups/{sample}"

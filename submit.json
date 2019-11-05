@@ -3,7 +3,7 @@
     {
       "p" : "med2",
       "mem" : "16G",
-      "time" : "7-00:00"
+      "time" : "1-00:00"
     },
     "bwa_map" :
     {
@@ -13,31 +13,38 @@
     "samtools_sort" :
     {
       "p" : "high2",
-      "mem" : "20G",
-      "time" : "7-00:00"
+      "mem" : "32G",
+      "time" : "1-00:00"
     },
+    "samtools_samtobam" :
+    {
+      "p" : "med2",
+      "mem" : "32G",
+      "time" : "1-00:00"
+    },
+
     "bed_coverage" :
     {
       "p" : "med2",
       "mem" : "4G",
-      "time" : "7-00:00"
+      "time" : "1-00:00"
     },
     "mark_dups" :
     {
       "p" : "med2",
-      "mem" : "32G",
-      "time" : "7-00:00"
+      "mem" : "40G",
+      "time" : "1-00:00"
     },
     "haplotype_caller" :
     {
       "p" : "med2",
       "mem" : "16G",
-      "time" : "7-00:00"
+      "time" : "1-00:00"
     },
     "joint_genotyping" :
     {
       "p" : "med2",
       "mem" : "16G",
-      "time" : "7-00:00"
+      "time" : "1-00:00"
     }
 }
