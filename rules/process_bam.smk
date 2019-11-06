@@ -34,7 +34,8 @@ rule samtools_samtobam:
 
 rule add_rg:
     input:
-        "data/mergensort/{sample}.NEW.bam"
+#        "data/mergensort/{sample}.NEW.bam"
+        "data/sorted_bam/{sample}.sorted.bam"
     output:
         bam = temp(touch("data/interm/addrg/{sample}.rg.bam")),
         #index = temp(touch("data/interm/addrg/{sample}.rg.bai"))

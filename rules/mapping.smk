@@ -8,22 +8,21 @@ rule bwa_map:
         ref = "/group/jrigrp6/andropogon_sequence/data/genome/ANDRO_contigs1278.fasta",
 #        r1 = "/group/jrigrp10/andropogon_shortreads/{sample}_R1.fastq.gz",
 #        r2 = "/group/jrigrp10/andropogon_shortreads/{sample}_R2.fastq.gz",
-        r1 = "/group/jrigrp10/andropogon_shortreads/{sample}*R1*gz",
-        r2 = "/group/jrigrp10/andropogon_shortreads/{sample}*R2*gz"
+        r1 = "/group/jrigrp10/andropogon_shortreads/{sample}.merge.R1.fastq.gz",
+        r2 = "/group/jrigrp10/andropogon_shortreads/{sample}.merge.R2.fastq.gz"
     output:
         temp("data/interm/mapped_bam/{sample}.mapped.bam"),
     log:
         "logs/bwa_mem/{sample}.log",
     shell:
-#        "(bwa mem -t 8 {input.ref} {input.r1} {input.r2} |"
-       "bwa mem -t 8 {input.ref} <(zcat {input.r1}) <(zcat {input.r2}) |" 
-       "samtools view -Sb > {output}) 2> {log}"
+        "(bwa mem -t 8 {input.ref} {input.r1} {input.r2} |"
+        "samtools view -Sb > {output}) 2> {log}"
 
 # Takes the input file and stores a sorted version in a different directory.
 rule samtools_sort:
     input:
         "data/interm/mapped_bam/{sample}.mapped.bam",
     output:
-        "data/sorted_bam/{sample}.sorted.bam",
+        temp("data/sorted_bam/{sample}.sorted.bam"),
     shell:
         "samtools sort {input} > {output}"
