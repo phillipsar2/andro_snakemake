@@ -1,11 +1,17 @@
 import config
 
 # Different SAMPLE names
-#SAMPLE = glob_wildcards("/group/jrigrp10/andropogon_shortreads/{sample}_R1.fastq.gz").sample
+SAMPLE = glob_wildcards("/group/jrigrp10/andropogon_shortreads/{sample}_R1.fastq.gz").sample
+#SAMPLE = glob_wildcards("/group/jrigrp10/andropogon_shortreads/{sample}_1.fq.gz").sample
+#SAMPLE = glob_wildcards("data/interm/mark_dups/{sample}.dedup.bam").sample
+#SAMPLE = glob_wildcards("data/bcfs/{sample}.vcf").sample
+
 ## This one right below is the good shit for 11/4 work
-SAMPLE = glob_wildcards("/group/jrigrp10/andropogon_shortreads/{sample}.merge.R1.fastq.gz").sample
+#SAMPLE = glob_wildcards("/group/jrigrp10/andropogon_shortreads/{sample}.merge.R1.fastq.gz").sample
+
+
 #SAMPLE = glob_wildcards("data/sorted_bam/{sample}.merge.bam").sample
-#print(SAMPLE)
+print(SAMPLE)
 
 ##### Test Test #####
 #SAMPLE = ["INEK_PCRfree_Loretta_BB-5_22_GGTCACGA_Andropogon_gerardii", "INDZ_PCRfree_Loretta_FUL-5_35_GATCTATC_Andropogon_gerardii", "INDI_PCRfree_Loretta_SAL-6_7_TCCAACGC_Andropogon_gerardii", "INEA_PCRfree_Loretta_WAL-5_13_AGCTCGCT_Andropogon_gerardii", "INDJ_PCRfree_4-2-Oct2-plant_1_48_TACCGAGG_Andropogon_gerardii", "INEB_PCRfree_CAM807_51_ACACTAAG_Andropogon_gerardii", "INDK_PCRfree_Loretta_12mi-7_29_CGTTAGAA_Andropogon_gerardii", "INEC_PCRfree_Loretta_BB-3_20_GTGTCGGA_Andropogon_gerardii", "INDL_PCRfree_Loretta_FUL-2_32_AGCCTCAT_Andropogon_gerardii", "INED_PCRfree_Loretta_Ful-1_31_TTCCTGTT_Andropogon_gerardii", "INDM_PCRfree_Loretta_WAL-2_10_GATTCTGC_Andropogon_gerardii"] 
@@ -21,11 +27,17 @@ rule all:
         ## Processing the genome
         expand("data/interm/mark_dups/{sample}.dedup.bam", sample = SAMPLE),
         expand("data/interm/mark_dups/{sample}.dedup.bai", sample = SAMPLE),
-        expand("qc/mark_dup/{sample}_metrics.txt", sample = SAMPLE),
+#        expand("qc/mark_dup/{sample}_metrics.txt", sample = SAMPLE),
+        expand("reports/bamqc/{sample}_stats/qualimapReport.html", sample = SAMPLE),       
+#        "reports/multisampleBamQcReport.html",
         ## Prepping genome
         #config.ref_dict,
         #config.ref_fai,
         ## Calling SNPs
+#        expand("data/mpileup/{sample}.mpileup", sample = SAMPLE),
+#        expand("data/bcfs/{sample}.vcf", sample = SAMPLE),
+#        expand("data/bcfs/{sample}.vcf.gz", sample = SAMPLE),
+#        expand("data/bcfs/{sample}.fixed.vcf", sample = SAMPLE),
         #expand("data/gvcf/{sample}.g.vcf", sample = SAMPLE),
         #config.joint_out
 

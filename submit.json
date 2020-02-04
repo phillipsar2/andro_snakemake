@@ -3,48 +3,64 @@
     {
       "p" : "med2",
       "mem" : "16G",
-      "time" : "1-00:00"
+      "time" : "7-00:00"
     },
     "bwa_map" :
     {
-      "mem": "64G",
-      "p" : "med2"
+      "mem": "32G",
+# typically 64
+      "p" : "med2",
+      "time" : "7-00:00",
+      "name" : "bwa_map",
     },
     "samtools_sort" :
     {
-      "p" : "high2",
-      "mem" : "32G",
-      "time" : "1-00:00"
+      "p" : "med2",
+      "mem" : "16G",
+# typically 32 or 48
+      "time" : "7-00:00",
+      "name " : "samtools_sort",
     },
     "samtools_samtobam" :
     {
       "p" : "med2",
-      "mem" : "32G",
-      "time" : "1-00:00"
+      "mem" : "16G",
+      "time" : "7-00:00",
+      "time" : "samtobam",
     },
 
     "bed_coverage" :
     {
       "p" : "med2",
       "mem" : "4G",
-      "time" : "1-00:00"
+      "time" : "7-00:00"
     },
     "mark_dups" :
     {
       "p" : "med2",
       "mem" : "40G",
-      "time" : "1-00:00"
+      "time" : "7-00:00",
+      "name" : "mark_dups",
+    },
+    "bamqc" :
+    {
+      "p" : "med2",
+      "mem" : "48G",
+      "time" : "7-00:00",
+      "name" : bamqc",
     },
     "haplotype_caller" :
     {
       "p" : "med2",
       "mem" : "16G",
-      "time" : "1-00:00"
+      "time" : "7-00:00",
+      "name" : "haplotype_caller"
     },
     "joint_genotyping" :
     {
       "p" : "med2",
       "mem" : "16G",
-      "time" : "1-00:00"
+      "time" : "7-00:00",
+      "name" : "jointgenotyping"
     }
 }

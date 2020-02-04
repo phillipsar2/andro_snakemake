@@ -1,36 +1,31 @@
 # Proccessing merged bam files
 
-rule samtools_resort:
-    input:
-        "data/sorted_bam/{sample}.merge.bam"
-    output:
-        temp("data/mergensort/{sample}.merge.sorted.bam")
-    params:
-        "-m 16G"
-#        tmp = "/scratch/aphillip/sort_bam/{sample}"
-    run:
-        shell("samtools sort {input} > {output}")
-        #shell("rm {sample}.merge.bam")
-#    wrapper:
-#        "0.38.0/bio/samtools/sort"
+#rule samtools_resort:
+#    input:
+#        "data/sorted_bam/{sample}.merge.bam"
+#    output:
+#        temp("data/mergensort/{sample}.merge.sorted.bam")
+#    params:
+#        "-m 16G"
+#    run:
+#        shell("samtools sort {input} > {output}")
 
-rule samtools_bamtosam:
-    input:
-        "data/mergensort/{sample}.merge.sorted.bam"
-    output:
-        temp("data/mergensort/{sample}.merge.sorted.sam")
-    run:
-        shell("samtools view -h -o {output} {input}")
+#rule samtools_bamtosam:
+#    input:
+#        "data/mergensort/{sample}.merge.sorted.bam"
+#    output:
+#        temp("data/mergensort/{sample}.merge.sorted.sam")
+#    run:
+#        shell("samtools view -h -o {output} {input}")
 
 
-rule samtools_samtobam:
-    input:
-        "data/mergensort/{sample}.merge.sorted.sam"
-    output:
-        "data/mergensort/{sample}.NEW.bam"
-    run:
-#        shell("samtools view -Sb {input} > {output}")
-        shell("samtools view -bS {input} > {output}")
+#rule samtools_samtobam:
+#    input:
+#        "data/mergensort/{sample}.merge.sorted.sam"
+#    output:
+#        "data/mergensort/{sample}.NEW.bam"
+#    run:
+#        shell("samtools view -bS {input} > {output}")
 
 rule add_rg:
     input:
@@ -40,8 +35,8 @@ rule add_rg:
         bam = temp(touch("data/interm/addrg/{sample}.rg.bam")),
         #index = temp(touch("data/interm/addrg/{sample}.rg.bai"))
     params:
-        tmp = "/scratch/aphillip/addrg/{sample}"
-        #sample = "{sample}",
+        tmp = "/scratch/aphillip/addrg/{sample}",
+        sample = "{sample}",
     run:
         shell("mkdir -p {params.tmp}")
         shell("gatk AddOrReplaceReadGroups \
@@ -51,7 +46,7 @@ rule add_rg:
         -RGLB=lib1 \
         -RGPL=illumina \
         -RGPU=unit1 \
-        -RGSM={{sample}} \
+        -RGSM={params.sample} \
         --TMP_DIR {params.tmp} \
         --CREATE_INDEX=true")
         shell("rm -rf {params.tmp}")
@@ -72,7 +67,6 @@ rule mark_dups:
         # Create a scratch directory
         shell("mkdir -p {params.tmp}")
         # Input bam file to output marked records. Assume bam file has been sorted. Direct to a temporary storage file (scratch).
-        ## It really doesn't like my scratch files
         shell("gatk MarkDuplicates \
         -I={input} \
         -O={output.bam} \
@@ -85,10 +79,48 @@ rule mark_dups:
         shell("rm -rf {params.tmp}")
 
 
-#gatk MarkDuplicates -I=data/sorted_reads/INCQ_PCRfree_1-McKain_252-WiDiv_43_CCGCGGTT_Andropogon_gerardii_I837_L1.sorted.bam \
-#WiDiv_43_CCGCGGTT_Andropogon_gerardii_I837_L1.dedup.bam  \
-#WiDiv_43_CCGCGGTT_Andropogon_gerardii_I837_L1_metrics.txt \
-#--CREATE_INDEX=true \
-#-MAX_FILE_HANDLES=1000 \
-#--ASSUME_SORT_ORDER=coordinate \
-#--TMP_DIR=/scratch/aphillip/INCQ_PCRfree_1-McKain_252-WiDiv_43_CCGCGGTT_Andropogon_gerardii_I837_L1
+# Quality metrics with qualimap
+
+rule bamqc:
+    input:
+        "data/interm/mark_dups/{sample}.dedup.bam",
+    output:
+        "reports/bamqc/{sample}_stats/qualimapReport.html"
+    params:
+        dir = "reports/bamqc/{sample}_stats"
+#    threads: 8
+    run: 
+        shell("qualimap bamqc \
+        -bam {input} \
+        -nt 8 \
+        -nr 100000 \
+        -outdir {params.dir} \
+        -outformat HTML \
+        --skip-duplicated \
+        --java-mem-size=64G")
+
+
+# Combine qualimap results with 'python magic' maybe
+
+#rule multibamqc:
+#    input:
+#        all = expand("reports/bamqc/{sample}_stats/qualimapReport.html", sample = SAMPLES)
+#    output:
+#        "reports/multisampleBamQcReport.html"
+#    params:
+#        outdir = "reports",
+#        infile = "models/bamqc_list.txt"
+#    run:
+#        shell("find reports/bamqc -mindepth 1 -maxdepth 1 -type d | grep SamC > models/ALL.bamqclist.txt")
+#        import pandas as pd
+#        data = pd.read_csv("models/ALL.bamqclist.txt", sep = " ", header = None, names = ['filename'])
+#        data['sample'] = data['filename'].str.split('.').str[0].str.split('/').str[2].str.split('_stats').str[0]
+#        data = data.sort_values('sample', axis = 0, ascending = True)
+#        data = data[['sample','filename']]
+#        data.to_csv(r'models/bamqc_list.txt', header = None, index = None, sep = ' ', mode = 'a')
+#        shell("qualimap multi-bamqc \
+#        --data {params.infile} \
+#        --paint-chromosome-limits \
+#        -outdir {params.outdir} \
+#        -outformat html \
+#        --java-mem-size=40G")

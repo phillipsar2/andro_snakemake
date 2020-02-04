@@ -2,6 +2,37 @@
 # Follows GATK best practices
 
 
+# Samtools mpileup 
+rule samtools_mpileup:
+    input:
+        bam = "/group/jrigrp6/andropogon_sequence/data/interm/mark_dups/{sample}.dedup.bam.gz", 
+        ref = "/group/jrigrp6/andropogon_sequence/data/genome/ANDRO_contigs1278.fasta",
+    output:
+        temp("data/mpileup/{sample}.mpileup"),
+#        "data/bcfs/{sample}.bcf",
+    run:
+        shell("zcat {input.bam} | bcftools mpileup -d100000 -a AD -Ou -Bf {input.ref} - -o {output}")
+#        bcftools call -mv -Ob -o {output} - ")
+
+rule bcftools_call:
+    input:
+        "data/mpileup/{sample}.mpileup",
+    output:
+        "data/bcfs/{sample}.vcf",
+    run:
+        shell("bcftools call -mv -Ov {input} > {output}")
+
+# Index and gzip vcfs
+rule bcftools_bgzip:
+    input:
+        "data/bcfs/{sample}.new.vcf",
+    output:
+        "data/bcfs/{sample}.vcf.gz",
+        "data/bcfs/{sample}.vcf.gz.csi",
+    run:
+        shell("bgzip {input}")
+        shell("bcftools index {output}")
+
 # Prep reference genome for GATK by indexing and creating a dictionary
 rule genome_index:
     input:
