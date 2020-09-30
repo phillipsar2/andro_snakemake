@@ -4,12 +4,13 @@
 
 rule bwa_map:
     input:
-        #config.ref,
-        ref = "/group/jrigrp6/andropogon_sequence/data/genome/newgenome/andropogon-geardii_Canu-BioNano-Hybrid_all-contigs.fasta",
+        ref = config.ref,
+#        ref = "/group/jrigrp6/andropogon_sequence/data/genome/newgenome/andropogon-geardii_Canu-BioNano-Hybrid_all-contigs.fasta",
         r1 = "/group/jrigrp10/andropogon_shortreads/{sample}_1.fq.gz",
         r2 = "/group/jrigrp10/andropogon_shortreads/{sample}_2.fq.gz",
 #        r1 = "/group/jrigrp10/andropogon_shortreads/{sample}.merge.R1.fastq.gz",
 #        r2 = "/group/jrigrp10/andropogon_shortreads/{sample}.merge.R2.fastq.gz"
+#
     output:
         temp("data/interm/mapped_bam/{sample}.mapped.bam"),
     log:

@@ -3,7 +3,8 @@
     {
       "p" : "med2",
       "mem" : "16G",
-      "time" : "7-00:00"
+      "time" : "7-00:00",
+      "name": "rando",
     },
     "bwa_map" :
     {
@@ -52,14 +53,28 @@
     "haplotype_caller" :
     {
       "p" : "med2",
-      "mem" : "16G",
+      "mem" : "32G",
       "time" : "7-00:00",
       "name" : "haplotype_caller"
+    },
+    "bgzip_vcfs" :
+    {
+      "p" : "med2",
+      "mem" : "4G",
+      "time" : "2-00:00",
+      "name" : "bgzip_vcfs"
+    },
+    "combine_gvcfs" :
+    {
+      "p" : "med2",
+      "mem" : "32G",
+      "time" : "7-00:00",
+      "name" : "combine_gvcfs"
     },
     "joint_genotyping" :
     {
       "p" : "med2",
-      "mem" : "16G",
+      "mem" : "32G",
       "time" : "7-00:00",
       "name" : "jointgenotyping"
     }

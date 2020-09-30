@@ -32,11 +32,11 @@ rule add_rg:
 #        "data/mergensort/{sample}.NEW.bam"
         "data/sorted_bam/{sample}.sorted.bam"
     output:
-        bam = temp(touch("data/interm/addrg/{sample}.rg.bam")),
+        bam = temp(touch("data/interm/addrg/{sample}.rg.bam"))
         #index = temp(touch("data/interm/addrg/{sample}.rg.bai"))
     params:
         tmp = "/scratch/aphillip/addrg/{sample}",
-        sample = "{sample}",
+        sample = "{sample}"
     run:
         shell("mkdir -p {params.tmp}")
         shell("gatk AddOrReplaceReadGroups \
@@ -58,8 +58,10 @@ rule mark_dups:
         config.mark_in
     output:
         # Make bam and index temporary
-        bam = "data/interm/mark_dups/{sample}.dedup.bam",
-        index = "data/interm/mark_dups/{sample}.dedup.bai",
+#        bam = "data/interm/mark_dups/{sample}.dedup.bam",
+        bam = "/group/jrigrp10/andropogon_shortreads/oldgenome_bams/{sample}.dedup.bam",
+        index = "/group/jrigrp10/andropogon_shortreads/oldgenome_bams/{sample}.dedup.bai",
+#        index = "data/interm/mark_dups/{sample}.dedup.bai",
         metrics = "qc/mark_dup/{sample}_metrics.txt"
     params:
         tmp = "/scratch/aphillip/mark_dups/{sample}"
@@ -124,3 +126,6 @@ rule bamqc:
 #        -outdir {params.outdir} \
 #        -outformat html \
 #        --java-mem-size=40G")
+
+# Realign indels
+
