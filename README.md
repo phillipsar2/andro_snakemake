@@ -1,12 +1,7 @@
 # Population genetics of  Andropogon gerardii
 
-A snakemake workflow for all things analysis
+A snakemake workflow for all of the things looking at origins of polyploidy.
 
-## Alignment Stats
-Induviduals were aligned to a subset of 1200 contigs, composing 11% of the original JGI 
-big bluestem genome, using BWA mem. 
+#1 Alignment
+- Short read data was verified as A. gerardi. Any data that had mixed identiy as a different species or identified entirely as another species was not alinged.
 
--Mean of induvidual's average coverage = 160X
-	35.33X coverage per subgenome
--Mean SD of each induvidual's coverage = 279.5
--Expected coverage based on the subset of contigs = 10-53X per induvidual

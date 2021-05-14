@@ -26,19 +26,9 @@ SAMPLE = glob_wildcards("/group/jrigrp10/andropogon_shortreads/{sample}_1.fq.gz"
 rule all:
     input:
         ## Aligning reads
-        #expand("data/sorted_bam/{sample}.sorted.bam", sample=SAMPLE),
-        #expand("data/coverage/{sample}.cov", sample=SAMPLE),
-        ## Processing the genome
-#        expand("data/interm/mark_dups/{sample}.dedup.bam", sample = SAMPLE),
-#        expand("/group/jrigrp10/andropogon_shortreads/oldgenome_bams/{sample}.dedup.bam", sample = SAMPLE),
-#        expand("data/interm/mark_dups/{sample}.dedup.bai", sample = SAMPLE),
-#        expand("qc/mark_dup/{sample}_metrics.txt", sample = SAMPLE),
-#        expand("reports/bamqc/{sample}_stats/qualimapReport.html", sample = SAMPLE),       
-#        "reports/multisampleBamQcReport.html",
-        ## Prepping genome
-        #config.ref_dict,
-        #config.ref_fai,
-        ## Calling SNPs
+        expand("data/interm/mark_dups/{sample}.dedup.bam", sample = SAMPLE),
+        expand("reports/bamqc/{sample}_stats/qualimapReport.html", sample = SAMPLE),       
+        ## SNP Calling
 #        expand("data/mpileup/{sample}.mpileup", sample = SAMPLE),
 #        expand("data/bcfs/{sample}.vcf", sample = SAMPLE),
 #        expand("data/bcfs/{sample}.vcf.gz", sample = SAMPLE),
@@ -46,14 +36,14 @@ rule all:
 #        expand("data/bcfs/{sample}.fixed.vcf", sample = SAMPLE),
 #        expand("data/gvcf/{sample}.g.vcf.gz", sample = SAMPLE),
 #        expand("/group/jrigrp10/andropogon_shortreads/newvcfs_fixed/{sample}.g.vcf.gz", sample = SAMPLE),
-        expand("/group/jrigrp10/andropogon_shortreads/newvcfs_fixed/{sample}.g.vcf.gz.tbi",sample = SAMPLE),
+#        expand("/group/jrigrp10/andropogon_shortreads/newvcfs_fixed/{sample}.g.vcf.gz.tbi",sample = SAMPLE),
 #        "/group/jrigrp10/andropogon_shortreads/newvcfs_fixed/combined.g.vcf.gz"
 #        "data/raw/vcf/andro.raw.snps.indels.vcf",
          #config.joint_out
 
 # Rules
-#include: "rules/mapping.smk"
+include: "rules/mapping.smk"
 #include: "rules/coverage.smk"
 #include: "rules/process_bam.smk"
-include: "rules/calling_snps.smk"
-include: "rule/updog_genotyping.smk"
+#include: "rules/calling_snps.smk"
+#include: "rule/updog_genotyping.smk"
