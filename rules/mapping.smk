@@ -9,18 +9,18 @@ rule bwa_map:
 #
     output:
         temp("data/interm/mapped_bam/{sample}.mapped.bam"),
-    log:
-        "logs/bwa_mem/{sample}.log",
+#    log:
+#        "logs/bwa_mem/{sample}.log",
     shell:
-        "(bwa-mem2 mem -t 8 {input.ref} {input.r1} {input.r2} |"
-        "samtools view -Sb > {output}) 2> {log}"
+        "bwa-mem2 mem -t 8 {input.ref} {input.r1} {input.r2} |"
+        "samtools view -Sb > {output}"
 
 # Takes the input file and stores a sorted version in a different directory.
 rule samtools_sort:
     input:
         "data/interm/mapped_bam/{sample}.mapped.bam"
     output:
-        temp("data/sorted_bam/{sample}.sorted.bam"),
+        temp("data/interm/sorted_bam/{sample}.sorted.bam"),
     params:
         tmp = "/scratch/aphillip/sort_bam/{sample}"
     run:
@@ -30,7 +30,7 @@ rule samtools_sort:
 
 rule add_rg:
     input:
-        "data/sorted_bam/{sample}.sorted.bam"
+        "data/interm/sorted_bam/{sample}.sorted.bam"
     output:
         bam = temp(touch("data/interm/addrg/{sample}.rg.bam"))
     params:
@@ -90,7 +90,6 @@ rule bamqc:
         -outformat HTML \
         --skip-duplicated \
         --java-mem-size=64G")
-
 
 ### No longer need to realign INDELs as HaplotypeCaller takes care of it ###
 # https://gatkforums.broadinstitute.org/gatk/discussion/11455/realignertargetcreator-and-indelrealigner

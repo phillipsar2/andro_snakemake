@@ -52,7 +52,6 @@ rule add_rg:
         shell("rm -rf {params.tmp}")
 
 
-# This works!
 rule mark_dups:
     input:
         config.mark_in

@@ -27,7 +27,7 @@ rule all:
     input:
         ## Aligning reads
         expand("data/interm/mark_dups/{sample}.dedup.bam", sample = SAMPLE),
-        expand("reports/bamqc/{sample}_stats/qualimapReport.html", sample = SAMPLE),       
+#        expand("reports/bamqc/{sample}_stats/qualimapReport.html", sample = SAMPLE),       
         ## SNP Calling
 #        expand("data/mpileup/{sample}.mpileup", sample = SAMPLE),
 #        expand("data/bcfs/{sample}.vcf", sample = SAMPLE),
