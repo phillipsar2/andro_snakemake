@@ -4,8 +4,9 @@
       "p" : "med2",
       "mem" : "16G",
       "time" : "7-00:00",
-      "name": "{rule}_{wildcards}",
-      "o": "slurm_out/{rule}_{wildcards}.%j.out",
+      "name": "rando",
+#      "name": "{rule}_{wildcards}",
+#      "o": "slurm_out/{rule}_{wildcards}.%j.out",
       "cpus-per-task": 1
     },
     "bwa_map" :
@@ -15,7 +16,7 @@
       "p" : "bigmemm",
       "time" : "7-00:00",
       "name" : "bwa_map",
-      "cpus-per-task": 8
+      "cpus-per-task": 8,
     },
     "samtools_sort" :
     {
@@ -24,6 +25,7 @@
 # typically 32 or 48
       "time" : "7-00:00",
       "name " : "samtools_sort",
+      "cpus-per-task": 4,
     },
     "mark_dups" :
     {

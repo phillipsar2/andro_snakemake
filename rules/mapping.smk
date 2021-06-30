@@ -2,17 +2,18 @@
 rule bwa_map:
     input:
         ref = config.ref,
-        r1 = "/group/jrigrp10/andropogon_shortreads/{sample}_1.fq.gz",
-        r2 = "/group/jrigrp10/andropogon_shortreads/{sample}_2.fq.gz",
-#        r1 = "/group/jrigrp10/andropogon_shortreads/{sample}.merge.R1.fastq.gz",
-#        r2 = "/group/jrigrp10/andropogon_shortreads/{sample}.merge.R2.fastq.gz"
+#        r1 = "/group/jrigrp10/andropogon_shortreads/{sample}_1.fq.gz",
+#        r2 = "/group/jrigrp10/andropogon_shortreads/{sample}_2.fq.gz",
+        r1 = "/group/jrigrp10/andropogon_shortreads/{sample}.merge.R1.fastq.gz",
+        r2 = "/group/jrigrp10/andropogon_shortreads/{sample}.merge.R2.fastq.gz"
 #
     output:
         temp("data/interm/mapped_bam/{sample}.mapped.bam"),
 #    log:
 #        "logs/bwa_mem/{sample}.log",
+    threads: 8
     shell:
-        "bwa-mem2 mem -t 8 {input.ref} {input.r1} {input.r2} |"
+        "bwa-mem2 mem -t {threads} {input.ref} {input.r1} {input.r2} |"
         "samtools view -Sb > {output}"
 
 # Takes the input file and stores a sorted version in a different directory.
@@ -23,9 +24,10 @@ rule samtools_sort:
         temp("data/interm/sorted_bam/{sample}.sorted.bam"),
     params:
         tmp = "/scratch/aphillip/sort_bam/{sample}"
+    threads: 4
     run:
         shell("mkdir -p {params.tmp}")
-        shell("samtools sort -T {params.tmp} {input} > {output}")
+        shell("samtools sort -T {params.tmp} -@ {threads} {input} > {output}")
         shell("rm -rf {params.tmp}")
 
 rule add_rg:
@@ -90,7 +92,12 @@ rule bamqc:
         -outformat HTML \
         --skip-duplicated \
         --java-mem-size=64G")
-
-### No longer need to realign INDELs as HaplotypeCaller takes care of it ###
-# https://gatkforums.broadinstitute.org/gatk/discussion/11455/realignertargetcreator-and-indelrealigner
         
+#rule fastqc:
+#    input:
+#        "/group/jrigrp6/andropogon_sequence/data/interm/mark_dups/AN18*.bam"
+#    output:
+#    run:
+#        shell("fastqc -o reports/fastqc \
+#        -f bam {input} \
+#        --java-mem-size=40G")
