@@ -3,14 +3,15 @@ rule bwa_map:
     input:
         ref = config.ref,
 #        r1 = "/group/jrigrp10/andropogon_shortreads/{sample}_1.fq.gz",
-#        r2 = "/group/jrigrp10/andropogon_shortreads/{sample}_2.fq.gz",
+#        r2 = "/group/jrigrp10/andropogon_shortreads/{sample}_2.fq.gz"
         r1 = "/group/jrigrp10/andropogon_shortreads/{sample}.merge.R1.fastq.gz",
         r2 = "/group/jrigrp10/andropogon_shortreads/{sample}.merge.R2.fastq.gz"
 #
     output:
-        temp("data/interm/mapped_bam/{sample}.mapped.bam"),
+        temp("data/interm/mapped_bam/{sample}.mapped.bam")
 #    log:
 #        "logs/bwa_mem/{sample}.log",
+#    threads: 4
     threads: 8
     shell:
         "bwa-mem2 mem -t {threads} {input.ref} {input.r1} {input.r2} |"
@@ -40,7 +41,7 @@ rule add_rg:
         sample = "{sample}"
     run:
         shell("mkdir -p {params.tmp}")
-        shell("gatk AddOrReplaceReadGroups \
+        shell("gatk --java-options ""-Xmx4G"" AddOrReplaceReadGroups \
         -I={input} \
         -O={output.bam} \
         -RGID=4 \
@@ -64,7 +65,7 @@ rule mark_dups:
         # Create a scratch directory
         shell("mkdir -p {params.tmp}")
         # Input bam file to output marked records. Assume bam file has been sorted. Direct to a temporary storage file (scratch).
-        shell("gatk MarkDuplicates \
+        shell("gatk --java-options ""-Xmx10G"" MarkDuplicates \
         -I={input} \
         -O={output.bam} \
         --METRICS_FILE={output.metrics} \
@@ -76,13 +77,16 @@ rule mark_dups:
         shell("rm -rf {params.tmp}")
 
 # Quality metrics with qualimap
+# nr is normally 100000 and -nt is normally 8, java mem size = 48
+# for higher cov, make nr 1000 and -nt 12, java mem size = 64
 rule bamqc:
     input:
-        "data/interm/mark_dups/{sample}.dedup.bam"
+        "data/interm/mark_dups/{bam}.dedup.bam"
+###        "data/interm/mark_dups/I{bam}.dedup.bam"
     output:
-        "reports/bamqc/{sample}_stats/qualimapReport.html"
+        "reports/bamqc/{bam}_stats/qualimapReport.html"
     params:
-        dir = "reports/bamqc/{sample}_stats"
+        dir = "reports/bamqc/{bam}_stats"
     run: 
         shell("qualimap bamqc \
         -bam {input} \
@@ -91,7 +95,7 @@ rule bamqc:
         -outdir {params.dir} \
         -outformat HTML \
         --skip-duplicated \
-        --java-mem-size=64G")
+        --java-mem-size=48G")
         
 #rule fastqc:
 #    input:

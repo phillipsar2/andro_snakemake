@@ -1,10 +1,16 @@
 import config
 
 # Different SAMPLE names
-#SAMPLE = glob_wildcards("/group/jrigrp10/andropogon_shortreads/{sample}_R1.fastq.gz").sample
-SAMPLE = glob_wildcards("/group/jrigrp10/andropogon_shortreads/{sample}_1.fq.gz").sample
+SAMPLE = glob_wildcards("/group/jrigrp10/andropogon_shortreads/{sample}.merge.R1.fastq.gz").sample
+#SAMPLE = glob_wildcards("/group/jrigrp10/andropogon_shortreads/{sample}_1.fq.gz").sample
 #SAMPLE = glob_wildcards("data/interm/mark_dups/{sample}.dedup.bam").sample
 #SAMPLE = glob_wildcards("data/bcfs/{sample}.vcf").sample
+#print(SAMPLE)
+
+
+# BAM names encompass all samples regardless of their fastq pattern
+BAM = glob_wildcards("data/interm/mark_dups/{bam}.dedup.bam").bam
+#print(BAM)
 
 ## This one right below is the good shit for 11/4 work
 #SAMPLE = glob_wildcards("/group/jrigrp10/andropogon_shortreads/{sample}.merge.R1.fastq.gz").sample
@@ -27,7 +33,7 @@ rule all:
     input:
         ## Aligning reads
         expand("data/interm/mark_dups/{sample}.dedup.bam", sample = SAMPLE),
-#        expand("reports/bamqc/{sample}_stats/qualimapReport.html", sample = SAMPLE),       
+        expand("reports/bamqc/{bam}_stats/qualimapReport.html", bam = BAM),       
         ## SNP Calling
 #        expand("data/mpileup/{sample}.mpileup", sample = SAMPLE),
 #        expand("data/bcfs/{sample}.vcf", sample = SAMPLE),

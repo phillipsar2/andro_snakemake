@@ -4,7 +4,8 @@
 
 
 # Prepare the genome
-ref = "data/genome/corteva_andro/Andropogon_geardii_hifiasm-bionano-nohets_v2.fasta"
+ref = "data/genome/JGIgenome/v1/Andropogon_gerardii_var_Kellogg_1272_HAP1_V1_release/Andropogon_gerardii_var_Kellogg_1272/sequences/Andropogon_gerardii_var_Kellogg_1272.mainGenome.fasta"
+
 
 # HaplotypeCaller
 #haplo_in = "data/sorted_bam/{sample}.merge.bam"
