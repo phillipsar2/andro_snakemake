@@ -6,6 +6,10 @@
 # Prepare the genome
 ref = "data/genome/JGIgenome/v1/Andropogon_gerardii_var_Kellogg_1272_HAP1_V1_release/Andropogon_gerardii_var_Kellogg_1272/sequences/Andropogon_gerardii_var_Kellogg_1272.mainGenome.fasta"
 
+# Merge low-coverage bams
+bam_file = "bams_to_merge.tsv"
+
+# --- old stuff ---
 
 # HaplotypeCaller
 #haplo_in = "data/sorted_bam/{sample}.merge.bam"

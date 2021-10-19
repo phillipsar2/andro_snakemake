@@ -12,6 +12,16 @@ SAMPLE = glob_wildcards("/group/jrigrp10/andropogon_shortreads/{sample}.merge.R1
 BAM = glob_wildcards("data/interm/mark_dups/{bam}.dedup.bam").bam
 #print(BAM)
 
+# MERGE contains a list of the bams that belong to each genotype (GENO)  so they can be merged
+#bam_file = config["bam_file"]
+#MERGE_A = read_table(sample_file)['Merge_A']
+#MERGE_B = read_table(sample_file)['Merge_B']
+#GENO = read_table(sample_file)['Genotype']
+
+#print(MERGE_A)
+#print(GENO)
+
+
 ## This one right below is the good shit for 11/4 work
 #SAMPLE = glob_wildcards("/group/jrigrp10/andropogon_shortreads/{sample}.merge.R1.fastq.gz").sample
 #SAMPLE = glob_wildcards("/group/jrigrp6/andropogon_sequence/data/bcfs/{sample}.g.vcf.gz").sample
@@ -19,6 +29,7 @@ BAM = glob_wildcards("data/interm/mark_dups/{bam}.dedup.bam").bam
 
 # Number of intervals for GATK SplitIntervals
 #INTERVALS = ["{:04d}".format(x) for x in list(range(200))]
+
 
 #SAMPLE = glob_wildcards("data/sorted_bam/{sample}.merge.bam").sample
 #print(SAMPLE)
@@ -33,7 +44,9 @@ rule all:
     input:
         ## Aligning reads
         expand("data/interm/mark_dups/{sample}.dedup.bam", sample = SAMPLE),
-        expand("reports/bamqc/{bam}_stats/qualimapReport.html", bam = BAM),       
+        expand("reports/bamqc/{bam}_stats/qualimapReport.html", bam = BAM),
+        ## Merging low-coverage bams
+#        expand("data/interm/mark_dups/{geno}_{merge_A}_{merge_B}.merged.dedup.bam", zip, geno = GENO, merge_A = MERGE_A, merge_b = MERGE_B),
         ## SNP Calling
 #        expand("data/mpileup/{sample}.mpileup", sample = SAMPLE),
 #        expand("data/bcfs/{sample}.vcf", sample = SAMPLE),

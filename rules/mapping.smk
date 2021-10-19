@@ -1,4 +1,5 @@
 # Align reads to the reference genome
+# bwa-mem2/2.2.1_x64-linux
 rule bwa_map:
     input:
         ref = config.ref,
@@ -78,7 +79,9 @@ rule mark_dups:
 
 # Quality metrics with qualimap
 # nr is normally 100000 and -nt is normally 8, java mem size = 48
+# nw is normally 400
 # for higher cov, make nr 1000 and -nt 12, java mem size = 64
+# tested with nr = 10000 and nw = 400, failed
 rule bamqc:
     input:
         "data/interm/mark_dups/{bam}.dedup.bam"
@@ -90,18 +93,22 @@ rule bamqc:
     run: 
         shell("qualimap bamqc \
         -bam {input} \
-        -nt 8 \
-        -nr 100000 \
+        -nt 12 \
+        -nr 1000 \
+        -nw 400 \
         -outdir {params.dir} \
         -outformat HTML \
         --skip-duplicated \
-        --java-mem-size=48G")
+        --java-mem-size=64G")
         
-#rule fastqc:
-#    input:
-#        "/group/jrigrp6/andropogon_sequence/data/interm/mark_dups/AN18*.bam"
+# Some genotypes were sequenced multiple times. The individual runs were seperately aligned to the genome. Next, we merge the bam files together so there is one bam per genotype.
+#rule sam_merge:
+#     input:
+#         A = "data/interm/mark_dups/{merge_A}.dedup.bam",
+#         B = "data/interm/mark_dups/{merge_B}.dedup.bam",
 #    output:
-#    run:
-#        shell("fastqc -o reports/fastqc \
-#        -f bam {input} \
-#        --java-mem-size=40G")
+#        "data/interm/mark_dups/{geno}_{merge_A}_{merge_B}.merged.dedup.bam"
+#    shell:
+#        """
+#        samtools merge -o {output} {input.A} {input.B}
+#        """
