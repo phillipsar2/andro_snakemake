@@ -1,4 +1,5 @@
 import config
+import pandas as pd
 
 # Different SAMPLE names
 SAMPLE = glob_wildcards("/group/jrigrp10/andropogon_shortreads/{sample}.merge.R1.fastq.gz").sample
@@ -13,12 +14,13 @@ BAM = glob_wildcards("data/interm/mark_dups/{bam}.dedup.bam").bam
 #print(BAM)
 
 # MERGE contains a list of the bams that belong to each genotype (GENO)  so they can be merged
-#bam_file = config["bam_file"]
-#MERGE_A = read_table(sample_file)['Merge_A']
-#MERGE_B = read_table(sample_file)['Merge_B']
-#GENO = read_table(sample_file)['Genotype']
+file = pd.read_csv("bams_to_merge.tsv", sep = "\t", header = 0)
+MERGE_A = list(file.Merge_A)
+MERGE_B = list(file.Merge_B)
+GENO = list(file.Genotype)
 
 #print(MERGE_A)
+#print(MERGE_B)
 #print(GENO)
 
 
@@ -43,10 +45,11 @@ BAM = glob_wildcards("data/interm/mark_dups/{bam}.dedup.bam").bam
 rule all:
     input:
         ## Aligning reads
-        expand("data/interm/mark_dups/{sample}.dedup.bam", sample = SAMPLE),
-        expand("reports/bamqc/{bam}_stats/qualimapReport.html", bam = BAM),
+#        expand("data/interm/mark_dups/{sample}.dedup.bam", sample = SAMPLE),
+#        expand("reports/bamqc/{bam}_stats/qualimapReport.html", bam = BAM),
         ## Merging low-coverage bams
-#        expand("data/interm/mark_dups/{geno}_{merge_A}_{merge_B}.merged.dedup.bam", zip, geno = GENO, merge_A = MERGE_A, merge_b = MERGE_B),
+#        expand("data/interm/mark_dups/{geno}.{merge_A}.{merge_B}.merged.dedup.bam", zip, merge_A = MERGE_A, merge_B = MERGE_B, geno = GENO),
+        expand("data/interm/mark_dups/{geno}.{merge_A}.{merge_B}.merged.rg.dedup.bam", zip, merge_A = MERGE_A, merge_B = MERGE_B, geno = GENO),
         ## SNP Calling
 #        expand("data/mpileup/{sample}.mpileup", sample = SAMPLE),
 #        expand("data/bcfs/{sample}.vcf", sample = SAMPLE),
@@ -61,8 +64,8 @@ rule all:
          #config.joint_out
 
 # Rules
-include: "rules/mapping.smk"
+#include: "rules/mapping.smk"
 #include: "rules/coverage.smk"
-#include: "rules/process_bam.smk"
+include: "rules/process_bam.smk"
 #include: "rules/calling_snps.smk"
 #include: "rule/updog_genotyping.smk"

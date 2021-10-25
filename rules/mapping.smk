@@ -99,16 +99,4 @@ rule bamqc:
         -outdir {params.dir} \
         -outformat HTML \
         --skip-duplicated \
-        --java-mem-size=64G")
-        
-# Some genotypes were sequenced multiple times. The individual runs were seperately aligned to the genome. Next, we merge the bam files together so there is one bam per genotype.
-#rule sam_merge:
-#     input:
-#         A = "data/interm/mark_dups/{merge_A}.dedup.bam",
-#         B = "data/interm/mark_dups/{merge_B}.dedup.bam",
-#    output:
-#        "data/interm/mark_dups/{geno}_{merge_A}_{merge_B}.merged.dedup.bam"
-#    shell:
-#        """
-#        samtools merge -o {output} {input.A} {input.B}
-#        """
+        --java-mem-size=20G")
