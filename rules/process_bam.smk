@@ -33,3 +33,38 @@ rule add_rg:
         --TMP_DIR {params.tmp} \
         --CREATE_INDEX=true")
         shell("rm -rf {params.tmp}")
+
+# Subsample high coverage bams
+## subsample high coverage bams (avg cov = 29X) to 2X coverage. 2/29 = 0.06
+rule subsample:
+    input:
+        "data/interm/mark_dups/IN{high}.dedup.bam"
+    output:
+        "data/final_bams/lowcov/IN{high}.subsample.dedup.bam"
+    shell:
+        """
+        samtools view -b -s 0.06 {input} > {output}
+        """
+
+# Quality metrics with qualimap of subsampled bams
+# nr is normally 100000 and -nt is normally 8, java mem size = 48
+# nw is normally 400
+# for higher cov, make nr 1000 and -nt 12, java mem size = 64
+# tested with nr = 10000 and nw = 400, failed
+rule bamqc:
+    input:
+        "data/final_bams/lowcov/IN{high}.subsample.dedup.bam"
+    output:
+        "reports/bamqc/final_bams/lowcov/IN{high}__stats/qualimapReport.html"
+    params:
+        dir = "reports/bamqc/final_bams/lowcov/IN{high}_stats"
+    run: 
+        shell("qualimap bamqc \
+        -bam {input} \
+        -nt 12 \
+        -nr 1000 \
+        -nw 400 \
+        -outdir {params.dir} \
+        -outformat HTML \
+        --skip-duplicated \
+        --java-mem-size=20G")    

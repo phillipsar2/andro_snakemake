@@ -16,20 +16,22 @@ MERGE_A = list(file.Merge_A)
 MERGE_B = list(file.Merge_B)
 GENO = list(file.Genotype)
 
-#print(MERGE_A)
-#print(MERGE_B)
-#print(GENO)
+# HIGH contains the bams to be subsampled to low coverage
+HIGH = glob_wildcards("data/interm/mark_dups/IN{high}.dedup.bam").high
+#print(HIGH)
 
 # TEST contains the samples for which AB should be calculate to determine ploidy
 # 9x, 6x, unknown
-#TEST = ['INDE_PCRfree_Loretta_SAL-5_6_GCACGGAC_Andropogon_gerardii', 'INDN_PCRfree_5-3-McKain_254-WI-Diversity_46_ATATGGAT_Andropogon_gerardii', 'INDA_PCRfree_Texas-2_41_CCAAGTCT_Andropogon_gerardii']
+TEST = ['INDE_PCRfree_Loretta_SAL-5_6_GCACGGAC_Andropogon_gerardii', 'INDN_PCRfree_5-3-McKain_254-WI-Diversity_46_ATATGGAT_Andropogon_gerardii', 'INDA_PCRfree_Texas-2_41_CCAAGTCT_Andropogon_gerardii']
+
+# filep contains the bams nQuire was run on to determine ploidy
 filep = pd.read_csv("bams_nquire.csv", sep = "\t", header = None)
 UNKNOWN = list(filep[0])
 
 
 # List of genotypes and ploidy levels
-# BAM = 
-# ploidy = 
+VCF = ['AN18N341_USPD16097229-AK4996-AK12976_HJM33DSXX_L3'] 
+PLOIDY = ['3']
 
 # Number of intervals for GATK SplitIntervals
 INTERVALS = ["{:04d}".format(x) for x in list(range(200))]
@@ -44,18 +46,22 @@ rule all:
         ## Merging low-coverage bams
 #        expand("data/interm/mark_dups/{geno}.{merge_A}.{merge_B}.merged.dedup.bam", zip, merge_A = MERGE_A, merge_B = MERGE_B, geno = GENO),
 #        expand("data/interm/mark_dups/{geno}.{merge_A}.{merge_B}.merged.rg.dedup.bam", zip, merge_A = MERGE_A, merge_B = MERGE_B, geno = GENO),
+        ## Subsample high-coverage bams
+#        expand("data/final_bams/lowcov/IN{high}.subsample.dedup.bam", high = HIGH),
+        expand("reports/bamqc/final_bams/lowcov/IN{high}__stats/qualimapReport.html", high = HIGH),
         ## nQuire
 #        hist = expand("data/nQuire/{unknown}_denoised.hist", unknown = UNKNOWN),
-        r = "data/nQuire/nquire_results_denoised.txt",
+#        r = "data/nQuire/nquire_results_denoised.txt",
         ## Calculate AB
 #        expand("data/ab/vcf/{test}.vcf", test = TEST),
-#        expand(""data/ab/table/{test}.AD.table", test = TEST),
+#        expand("data/ab/table/{test}.AD.table", test = TEST),
+#         "data/ab/table/INDE_PCRfree_Loretta_SAL-5_6_GCACGGAC_Andropogon_gerardii.AB.10k.estimate.txt"
         ## SNP Calling
-#        expand("data/gvcf/{bam}.p{ploidy}.g.vcf", zip, ploidy = PLOIDY, bam = BAM)
+#        expand("data/gvcf/{vcf}.p{ploidy}.g.vcf", zip, ploidy = PLOIDY, vcf = VCF)
 
 # Rules
-include: "rules/mapping.smk"
-#include: "rules/process_bam.smk"
-include: "rules/determine_ploidy.smk"
+#include: "rules/mapping.smk"
+include: "rules/process_bam.smk"
+#include: "rules/determine_ploidy.smk"
 #include: "rules/calc_AB.smk"
-#include: "rules/calling_snps.smk"
+#include: "rules/calling.smk"
