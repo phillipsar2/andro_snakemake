@@ -13,9 +13,17 @@ A snakemake workflow for all of the things looking at origins of polyploidy.
 - Low quality individuals (< 0.5X) were removed from the low-coverage data set and moved into the data/interm/low-coverage folder
 - If genome size could not be determined or inferred for an individual, the bam was moved to the folder data/interm/unknown-ploidy
 - High coverage bams (from JGI) were subsampled down to 2-4X coverage (samtools view -s) and placed in data/final_bams/lowcov
+- All remaining low-coverage bams (PanAnd) that were not discarded were moved to data/final_bams/lowcov
+- All remaining high-coverage bams (JGI) that were not discarded were moved to data/final_bams/highcov
 
 #3 Determine ploidy
 - nQuire was utilized to determine ploidy for all high-coverage Andropogon individuals. \
 I attempted to cluster the normalized maximum log-likelihood with mclust5 in R but it identified 8 and 9 clusters. \
 Instead, I plotted the normalized values and colored the points but known/unknown ploidy to identify groups. \
 Scripts are local in ~/Andropogon/nQuire. Ploidy was identified for 16 of 17 unknown individuals. 
+
+# SNP calling
+- Genotypes are called with bcftools mpileup for 2 sets of individuals: all high coverage (JGI) and all low coverage (subsampled + PanAnd)
+- Using a custom R script that utilizes vcfR, I extract the matrices for total read count and alternate read count
+- Then I use EBG to calculate phred-scaled genotype probabilites
+- The phred-scaled genotype probs are converted to mpgl format using a custom script

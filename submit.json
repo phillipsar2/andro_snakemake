@@ -3,7 +3,7 @@
     {
       "p" : "bigmemm",
       "mem" : "16G",
-      "time" : "2-00:00",
+      "time" : "7-00:00",
       "name": "rando",
 #      "name": "{rule}_{wildcards}",
 #      "o": "slurm_out/{rule}_{wildcards}.%j.out",
@@ -14,17 +14,17 @@
       "mem": "64G",
 # typically 64 or 32
       "p" : "bigmemm",
-      "time" : "2-00:00",
+      "time" : "30-00:00",
       "name" : "bwa_map",
       "cpus-per-task": 8,
-# typically 8 or 8
+# typically 8 or 4
     },
     "samtools_sort" :
     {
       "p" : "bigmemm",
       "mem" : "32G",
 # typically 32 or 48
-      "time" : "2-00:00",
+      "time" : "7-00:00",
       "name " : "samtools_sort",
       "cpus-per-task": 4,
     },
@@ -32,36 +32,77 @@
     {
       "p" : "bigmemm",
       "mem" : "40G",
-      "time" : "2-00:00",
+      "time" : "7-00:00",
       "name" : "mark_dups",
     },
     "bamqc" :
     {
-      "p" : "bigmemm",
-      "mem" : "48G",
-      "time" : "2-00:00",
+      "p" : "bigmemh",
+# typically 48 or 64
+      "mem" : "24G",
+      "time" : "7-00:00",
       "name" : "bamqc",
+# typically 8 or 12
       "cpus-per-task": 8,
+    },
+    "merge_bams" :
+    {
+      "p" : "bigmemm",
+      "mem": "2000M",
+      "time" : "7-00:00",
+      "name" : "merge_bams",
+    },
+    "calc_coverage":
+    {
+      "p" : "bigmemm",
+      "mem": "4G",
+      "time" : "7-00:00",
+      "name" : "calc_coverage",
+    },
+    "run_GMM":
+    {
+      "p" : "bigmemh",
+      "mem": "20G",
+      "time" : "7-00:00",
+      "name" : "run_GMM",
+      "cpus-per-task": 8,
+    },
+    "calc_AB" :
+    {
+      "p" : "bigmemm",
+      "mem" : "32G",
+      "time" : "7-00:00",
+      "name" : "calc_AB"
     },
     "haplotype_caller" :
     {
-      "p" : "med2",
-      "mem" : "32G",
-      "time" : "7-00:00",
-      "name" : "haplotype_caller"
+      "p" : "bigmemh",
+      "mem" : "48G",
+      "time" : "30-00:00",
+      "name" : "haplotype_caller",
+      "cpus-per-task": 6,
     },
     "combine_gvcfs" :
     {
-      "p" : "med2",
+      "p" : "bigmemm",
       "mem" : "32G",
-      "time" : "7-00:00",
-      "name" : "combine_gvcfs"
+      "time" : "30-00:00",
+      "name" : "combine_gvcfs",
+      "cpus-per-task": 8,
     },
     "joint_genotyping" :
     {
-      "p" : "med2",
+      "p" : "bigmemm",
       "mem" : "32G",
-      "time" : "7-00:00",
+      "time" : "30-00:00",
       "name" : "jointgenotyping"
+    },
+    "mpileup" :
+    {
+      "mem": "64G",
+      "p" : "bigmemm",
+      "time" : "14-00:00",
+      "name" : "mpileup",
+      "cpus-per-task": 8,
     }
 }

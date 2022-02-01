@@ -36,15 +36,15 @@ rule add_rg:
 
 # Subsample high coverage bams
 ## subsample high coverage bams (avg cov = 29X) to 2X coverage. 2/29 = 0.06
-rule subsample:
-    input:
-        "data/interm/mark_dups/IN{high}.dedup.bam"
-    output:
-        "data/final_bams/lowcov/IN{high}.subsample.dedup.bam"
-    shell:
-        """
-        samtools view -b -s 0.06 {input} > {output}
-        """
+#rule subsample:
+#    input:
+#        "data/interm/mark_dups/IN{high}.dedup.bam"
+#    output:
+#        "data/final_bams/lowcov/IN{high}.subsample.dedup.bam"
+#    shell:
+#        """
+#        samtools view -b -s 0.06 {input} > {output}
+#        """
 
 # Quality metrics with qualimap of subsampled bams
 # nr is normally 100000 and -nt is normally 8, java mem size = 48
@@ -53,15 +53,15 @@ rule subsample:
 # tested with nr = 10000 and nw = 400, failed
 rule bamqc:
     input:
-        "data/final_bams/lowcov/IN{high}.subsample.dedup.bam"
+        "data/final_bams/lowcov/{bam}.subsample.dedup.bam"
     output:
-        "reports/bamqc/final_bams/lowcov/IN{high}__stats/qualimapReport.html"
+        "reports/bamqc/final_bams/lowcov/{bam}_stats/genome_results.txt"
     params:
-        dir = "reports/bamqc/final_bams/lowcov/IN{high}_stats"
+        dir = "reports/bamqc/final_bams/lowcov/{bam}_stats"
     run: 
         shell("qualimap bamqc \
         -bam {input} \
-        -nt 12 \
+        -nt 8 \
         -nr 1000 \
         -nw 400 \
         -outdir {params.dir} \

@@ -11,7 +11,7 @@
 
 #  https://github.com/KamilSJaron/smudgeplot
 
-sample=INCW_PCRfree_3-3-Kellogg-1271_47_AGTTCAGG_Andropogon_gerardii
+sample=INDE_PCRfree_Loretta_SAL-5_6_GCACGGAC_Andropogon_gerardii
 
 ## Calculate kmer frequences from the fasta files and then store in a histogram
 ## Takes ~40 min to get the histogram
