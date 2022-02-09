@@ -1,18 +1,17 @@
 # Extract SNPs from each gvcf
 
-#rule get_snps:
-#    input:
-#        ref = config.ref,
-##        vcf = "data/gvcf/{vcf}.p{ploidy}.g.vcf.gz"
-#        vcf = "data/gvcf/subsample/{vcf}.p{ploidy}.subsample.g.vcf.gz"
-#    output:
-#        "data/raw/vcf_bpres/subsample/{vcf}.p{ploidy}.subsample.raw.snps.vcf"
-#    run:
-#        shell("gatk SelectVariants \
-#        -R {input.ref} \
-#        -V {input.vcf} \
-#        -select-type SNP \
-#        -O {output}")
+rule get_snps:
+    input:
+        ref = config.ref,
+        vcf = "data/vcf/lowcov/all.AG.lowcov.{chr}.raw.vcf.gz"
+    output:
+         "data/raw/vcf_bpres/lowcov/all.AG.lowcov.{chr}.raw.snps.vcf.gz"
+    run:
+        shell("gatk SelectVariants \
+        -R {input.ref} \
+        -V {input.vcf} \
+        -select-type SNP \
+        -O {output}")
 
 
 # Filtering diagnostics
@@ -22,18 +21,18 @@
 rule diagnostics:
     input:
 #        vcf = "data/raw/vcf_bpres/subsample/{vcf}.p{ploidy}.subsample.raw.snps.vcf"
-        vcf =  "data/gvcf/subsample/Ag.subsample.{chrom}.vcf.gz"
+        vcf = "data/raw/vcf_bpres/lowcov/all.AG.lowcov.{chr}.raw.snps.vcf.gz",
         ref = config.ref
     output:
-#        "reports/filtering/subsample/gvcf_{vcf}.p{ploidy}.subsample.table"
-        "reports/filtering/subsample/Ag.subsample.{chrom}.table"
-    run:
-        shell("gatk VariantsToTable \
+        "reports/filtering/lowcov/all.AG.lowcov.{chr}.table"
+    shell:
+        """
+        gatk VariantsToTable \
         -R {input.ref} \
         -V {input.vcf} \
-#        -F CHROM -F POS \
         -F QUAL -F QD -F DP -F MQ -F MQRankSum -F FS -F ReadPosRankSum -F SOR -F AD \
-        -O {output}")
+        -O {output}
+        """
 
 
 

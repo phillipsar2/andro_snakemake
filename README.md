@@ -22,8 +22,17 @@ I attempted to cluster the normalized maximum log-likelihood with mclust5 in R b
 Instead, I plotted the normalized values and colored the points but known/unknown ploidy to identify groups. \
 Scripts are local in ~/Andropogon/nQuire. Ploidy was identified for 16 of 17 unknown individuals. 
 
-# SNP calling
+#4 SNP calling
 - Genotypes are called with bcftools mpileup for 2 sets of individuals: all high coverage (JGI) and all low coverage (subsampled + PanAnd)
+
+#5 SNP filtering
+- SNPs are extracted using GATK. VCFs are converted to table format with GATK to examine quality distributions and set hard filtering cutoffs.
+- SNPs are hard filtered using GATK.
+	-- Lowcov:
+	-- Highcov:
+
+#6 Estimating genotype probabilities
 - Using a custom R script that utilizes vcfR, I extract the matrices for total read count and alternate read count
 - Then I use EBG to calculate phred-scaled genotype probabilites
 - The phred-scaled genotype probs are converted to mpgl format using a custom script
+
