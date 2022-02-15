@@ -5,15 +5,17 @@ rule bwa_map:
         ref = config.ref,
 #        r1 = "/group/jrigrp10/andropogon_shortreads/{sample}_1.fq.gz",
 #        r2 = "/group/jrigrp10/andropogon_shortreads/{sample}_2.fq.gz"
-        r1 = "/group/jrigrp10/andropogon_shortreads/{sample}.merge.R1.fastq.gz",
-        r2 = "/group/jrigrp10/andropogon_shortreads/{sample}.merge.R2.fastq.gz"
-#
+#        r1 = "/group/jrigrp10/andropogon_shortreads/{sample}.merge.R1.fastq.gz",
+#        r2 = "/group/jrigrp10/andropogon_shortreads/{sample}.merge.R2.fastq.gz"
+        r1 = "/group/jrigrp10/andropogon_shortreads/ucd_seq/{sample}_R1_001.fastq.gz",
+        r2 = "/group/jrigrp10/andropogon_shortreads/ucd_seq/{sample}_R2_001.fastq.gz"
+
     output:
         temp("data/interm/mapped_bam/{sample}.mapped.bam")
 #    log:
 #        "logs/bwa_mem/{sample}.log",
-#    threads: 4
-    threads: 8
+    threads: 4
+#    threads: 8
     shell:
         "bwa-mem2 mem -t {threads} {input.ref} {input.r1} {input.r2} |"
         "samtools view -Sb > {output}"
@@ -43,15 +45,15 @@ rule add_rg:
     run:
         shell("mkdir -p {params.tmp}")
         shell("gatk --java-options ""-Xmx4G"" AddOrReplaceReadGroups \
-        -I={input} \
-        -O={output.bam} \
-        -RGID=4 \
-        -RGLB=lib1 \
-        -RGPL=illumina \
-        -RGPU=unit1 \
-        -RGSM={params.sample} \
+        -I {input} \
+        -O {output.bam} \
+        -RGID 4 \
+        -RGLB lib1 \
+        -RGPL illumina \
+        -RGPU unit1 \
+        -RGSM {params.sample} \
         --TMP_DIR {params.tmp} \
-        --CREATE_INDEX=true")
+        --CREATE_INDEX true")
         shell("rm -rf {params.tmp}")
 
 rule mark_dups:
@@ -67,13 +69,13 @@ rule mark_dups:
         shell("mkdir -p {params.tmp}")
         # Input bam file to output marked records. Assume bam file has been sorted. Direct to a temporary storage file (scratch).
         shell("gatk --java-options ""-Xmx10G"" MarkDuplicates \
-        -I={input} \
-        -O={output.bam} \
-        --METRICS_FILE={output.metrics} \
-        --CREATE_INDEX=true \
-        -MAX_FILE_HANDLES=1000 \
-        --ASSUME_SORT_ORDER=coordinate \
-        --TMP_DIR={params.tmp}")
+        -I {input} \
+        -O {output.bam} \
+        --METRICS_FILE {output.metrics} \
+        --CREATE_INDEX true \
+        -MAX_FILE_HANDLES 1000 \
+        --ASSUME_SORT_ORDER coordinate \
+        --TMP_DIR {params.tmp}")
         # Remove scratch directory
         shell("rm -rf {params.tmp}")
 

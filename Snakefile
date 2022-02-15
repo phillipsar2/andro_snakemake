@@ -2,13 +2,14 @@ import config
 import pandas as pd
 
 # Different SAMPLE names
-SAMPLE = glob_wildcards("/group/jrigrp10/andropogon_shortreads/{sample}.merge.R1.fastq.gz").sample
+#SAMPLE = glob_wildcards("/group/jrigrp10/andropogon_shortreads/{sample}.merge.R1.fastq.gz").sample
 #SAMPLE = glob_wildcards("/group/jrigrp10/andropogon_shortreads/{sample}_1.fq.gz").sample
+SAMPLE = glob_wildcards("/group/jrigrp10/andropogon_shortreads/ucd_seq/{sample}_R1_001.fastq.gz").sample
 #print(SAMPLE)
 
 # BAM names encompass all samples regardless of their fastq pattern
-#BAM = glob_wildcards("data/interm/mark_dups/{bam}.dedup.bam").bam
-BAM = glob_wildcards("data/final_bams/lowcov/{bam}.dedup.bam").bam
+BAM = glob_wildcards("data/interm/mark_dups/{bam}.dedup.bam").bam
+#BAM = glob_wildcards("data/final_bams/lowcov/{bam}.dedup.bam").bam
 #BAM = glob_wildcards("data/final_bams/highcov/{bam}.dedup.bam").bam
 #print(BAM)
 
@@ -47,7 +48,7 @@ rule all:
     input:
         ## Aligning reads
 #        expand("data/interm/mark_dups/{sample}.dedup.bam", sample = SAMPLE),
-#        expand("reports/bamqc/{bam}_stats/qualimapReport.html", bam = BAM),
+        expand("reports/bamqc/{bam}_stats/qualimapReport.html", bam = BAM),
         ## Merging low-coverage bams
 #        expand("data/interm/mark_dups/{geno}.{merge_A}.{merge_B}.merged.dedup.bam", zip, merge_A = MERGE_A, merge_B = MERGE_B, geno = GENO),
 #        expand("data/interm/mark_dups/{geno}.{merge_A}.{merge_B}.merged.rg.dedup.bam", zip, merge_A = MERGE_A, merge_B = MERGE_B, geno = GENO),
@@ -61,13 +62,13 @@ rule all:
 #        index = expand( "data/final_bams/highcov/{bam}.dedup.bam.bai", bam = BAM),
 #        mpileup = expand("data/vcf/highcov/all.AG.highcov.{chr}.raw.vcf.gz", chr = CHROM)
         ## Filtering
-        snp = expand("data/raw/vcf_bpres/lowcov/all.AG.lowcov.{chr}.raw.snps.vcf.gz", chr = CHROM),
-        diag = expand("reports/filtering/lowcov/all.AG.lowcov.{chr}.table", chr = CHROM)
+#        snp = expand("data/raw/vcf_bpres/lowcov/all.AG.lowcov.{chr}.raw.snps.vcf.gz", chr = CHROM),
+#        diag = expand("reports/filtering/lowcov/all.AG.lowcov.{chr}.table", chr = CHROM)
 
 # Rules
-#include: "rules/mapping.smk"
+include: "rules/mapping.smk"
 #include: "rules/process_bam.smk"
 #include: "rules/determine_ploidy.smk"
 #include: "rules/calc_AB.smk"
 #include: "rules/calling.smk"
-include: "rules/filtering.smk"
+#include: "rules/filtering.smk"
