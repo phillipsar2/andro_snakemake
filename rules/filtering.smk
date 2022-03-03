@@ -1,4 +1,13 @@
-# Extract SNPs from each gvcf
+# Index vcfs
+rule index_vcfs:
+    input:
+        "data/vcf/lowcov/all.AG.lowcov.{chr}.raw.vcf.gz"
+    output:
+        "data/vcf/lowcov/all.AG.lowcov.{chr}.raw.vcf.gz.tbi"
+    run:
+        shell("bcftools index -t {input}")
+
+# (1) Extract SNPs from each gvcf
 
 rule get_snps:
     input:
@@ -14,7 +23,7 @@ rule get_snps:
         -O {output}")
 
 
-# Filtering diagnostics
+# (2) Filtering diagnostics
 # Extract variant quality scores
 # https://evodify.com/gatk-in-non-model-organism/
 
@@ -34,105 +43,81 @@ rule diagnostics:
         -O {output}
         """
 
-
-
-# Hard filter SNPs
+# (3) Hard filter SNPs
 # https://gatk.broadinstitute.org/hc/en-us/articles/360035531112?id=23216#2
 # https://gatk.broadinstitute.org/hc/en-us/articles/360037499012?id=3225
 
 
-# Apply the base GATK filter
+# Hard filter for mapping quality and base quality
 
 rule filter_snps:
     input:
         ref = config.ref,
-        vcf = "data/raw/vcf_bpres/subsample/{vcf}.p{ploidy}.subsample.raw.snps.vcf"
+        vcf = "data/raw/vcf_bpres/lowcov/all.AG.lowcov.{chr}.raw.snps.vcf.gz"
     output:
-        "data/processed/filtered_snps_bpres/subsample/{vcf}.p{ploidy}.subsample.filtered.snps.vcf"
+        "data/processed/filtered_snps_bpres/lowcov/all.AG.lowcov.{chr}.filtered.snps.vcf"
     run:
         shell("gatk VariantFiltration \
         -V {input.vcf} \
-        -filter \"QD < 2.0\" --filter-name \"QD2\" \
         -filter \"QUAL < 30.0\" --filter-name \"QUAL30\" \
-        -filter \"SOR > 3.0\" --filter-name \"SOR3\" \
-        -filter \"FS > 60.0\" --filter-name \"FS60\" \
-        -filter \"MQ < 40.0\" --filter-name \"MQ40\" \
-        -filter \"MQRankSum < -12.5\" --filter-name \"MQRankSum-12.5\" \
-        -filter \"ReadPosRankSum < -8.0\" --filter-name \"ReadPosRankSum-8\" \
+        -filter \"MQ < 30.0\" --filter-name \"MQ30\" \
         -O {output}")
 
 
-# Filter SNPs to only biallelic
-# --max-nocall-fraction is 0 for O. glum and 0.33 for O. sativa
+# (4) Filter SNPs to only biallelic sites and exclude the sites that failed the hard filter
 
 rule filter_nocall:
     input:
         ref = config.ref,
-        vcf = "data/processed/filtered_snps_bpres/subsample/{vcf}.p{ploidy}.subsample.filtered.snps.vcf"
+        vcf = "data/processed/filtered_snps_bpres/lowcov/all.AG.lowcov.{chr}.filtered.snps.vcf"
     output:
-        "data/processed/filtered_snps_bpres/subsample/{vcf}.p{ploidy}.subsample.filtered.nocall.vcf"
+        "data/processed/filtered_snps_bpres/lowcov/all.AG.lowcov.{chr}.filtered.nocall.vcf"
     run: 
         shell("gatk SelectVariants -V {input.vcf} --exclude-filtered true  --restrict-alleles-to BIALLELIC -O {output}")
         
 
-# Evaluate depth across samples to set DP filter
+# (5) Evaluate depth across samples to set DP filter
 
 rule depth:
     input:
-        vcf = "data/processed/filtered_snps_bpres/subsample/{vcf}.p{ploidy}.subsample.filtered.nocall.vcf",
+        vcf = "data/processed/filtered_snps_bpres/lowcov/all.AG.lowcov.{chr}.filtered.nocall.vcf",
         ref = config.ref
     output:
-        dp = "reports/filtering/depth/subsample/depth.{vcf}.p{ploidy}.subsample.filtered.nocall.table"
+        dp = "reports/filtering/depth/lowcov/all.AG.lowcov.{chr}.filtered.nocall.table"
     run:
-#        shell("tabix -p vcf {input.vcf}")
         shell("gatk VariantsToTable \
         -R {input.ref} \
         -V {input.vcf} \
         -F CHROM -F POS \
-#        -GF DP \
+        -GF DP \
         -O {output.dp}")
 
 
-
-# Fitlter by depth of each individual
-# GLUM aligned samples filtered 3 < DP < 100
-# O. sativa samples filtered 3 < DP < 90 
-
+# (6) Filter by genotype depth and missingness
 rule filter_depth:
     input:
-        vcf =  "data/processed/filtered_snps_bpres/subsample/{vcf}.p{ploidy}.subsample.filtered.nocall.vcf",
-        ref = config.ref
+        vcf = "reports/filtering/depth/lowcov/all.AG.lowcov.{chr}.filtered.nocall.table",
+        p = "0.99",
+        miss = "0.2",
     output:
-        dp = "data/processed/filtered_snps_bpres/subsample/{vcf}.p{ploidy}.subsample.filtered.3dp100.snps.vcf"
-    run:
-        shell("gatk VariantFiltration \
-        -R {input.ref} \
-        -V {input.vcf} \
-        -G-filter \"DP < 3 || DP > 100\" \
-        -G-filter-name \"DP_3-100\" \
-        --set-filtered-genotype-to-no-call true -O {output.dp}")
+    script:
+        "scripts/genoDPfilter.R"
 
-
-# filter snps for genotype missingness
-
-rule depth_nocall:
+# needs a tab deliminated list of file containing regions to select
+rule keep_snps:
     input:
-        "data/processed/filtered_snps_bpres/subsample/{vcf}.p{ploidy}.subsample.filtered.3dp100.snps.vcf"
+        vcf = "data/processed/filtered_snps_bpres/lowcov/all.AG.lowcov.{chr}.filtered.nocall.vcf",
+        snps = 
     output:
-        "data/processed/filtered_snps_bpres/subsample/{vcf}.p{ploidy}.subsample.filtered.3dp100.nocall.snps.vcf"
-    run:
-        shell("gatk SelectVariants -V {input} --exclude-filtered true --max-nocall-fraction 0.1 -O {output}")
+        "data/processed/filtered_snps_bpres/lowcov/all.AG.lowcov.{chr}.filtered.{p}.{miss}.snps.vcf.gz"
+    shell:
+        """
+        bgzip {input.vcf}
+        tabix -p vcf {input.vcf}
+        bcftools view -R {input.snps} -Oz -o {output} {input.vcf}
+        """
 
-# gzip vcfs
-
-rule bgzip_vcf:
-    input:
-        "data/processed/filtered_snps_bpres/subsample/{vcf}.p{ploidy}.subsample.filtered.3dp100.nocall.snps.vcf"
-    output:
-        "data/processed/filtered_snps_bpres/subsample/{vcf}.p{ploidy}.subsample.filtered.3dp100.nocall.snps.vcf.gz"
-    run:
-        shell("bgzip {input}")
-        shell("tabix -p vcf {output}")
+#        shell("tabix -p vcf {output}")
 
 # Combine interval vcfs with bcftools
 
@@ -141,34 +126,5 @@ rule bgzip_vcf:
 #        expand("data/processed/filtered_snps_bpres/subsample/{vcf}.p{ploidy}.subsample.filtered.3dp100.nocall.snps.vcf.gz", interval = INTERVALS, REF=REF)
 #    output:
 #        "data/processed/filtered_snps_bpres/{REF}/oryza.{REF}.vcf.gz"
-#    run:
-#        shell("bcftools concat {input} -Oz -o {output}")
-
-
-
-# Filter the whole-genome file
-# Change the DP filter maximum depending on the genome being analyzed
-
-#rule filter_wholegenome:
-#    input:
-#        vcf = "data/raw/vcf_bpres/{REF}/{interval}.raw.{REF}.vcf",
-#        ref = config.ref
-#    output:
-#        dp = "data/processed/filtered_snps_bpres/{REF}/{interval}.filtered.dp1.wholegenome.{REF}.vcf",
-#        dp2 = "data/processed/filtered_snps_bpres/{REF}/{interval}.filtered.dp2.nocall.wholegenome.{REF}.vcf"
-#    run:
-#        shell("gatk VariantFiltration \
-#        -R {input.ref} \
-#        -V {input.vcf} \
-#        -G-filter \"DP < 3 || DP > 90\" \
-#        -G-filter-name \"DP_3-90\" \
-#        --set-filtered-genotype-to-no-call true -O {output.dp}")
-#        shell("gatk SelectVariants -V {output.dp} --exclude-filtered true -O {output.dp2}")
-
-#rule combine_wgenomevcfs:
-#    input:
-#        expand("data/processed/filtered_snps_bpres/{REF}/{interval}.filtered.dp2.nocall.wholegenome.{REF}.vcf", interval = INTERVALS, REF=REF)
-#    output:
-#        "data/processed/filtered_snps_bpres/{REF}/wholegenome.{REF}.vcf.gz"
 #    run:
 #        shell("bcftools concat {input} -Oz -o {output}")

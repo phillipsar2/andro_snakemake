@@ -23,15 +23,15 @@ rule add_rg:
     run:
         shell("mkdir -p {params.tmp}")
         shell("gatk --java-options ""-Xmx4G"" AddOrReplaceReadGroups \
-        -I={input} \
-        -O={output.bam} \
-        -RGID=4 \
-        -RGLB=lib1 \
-        -RGPL=illumina \
-        -RGPU=unit1 \
-        -RGSM={params.sample} \
+        -I {input} \
+        -O {output.bam} \
+        -RGID 4 \
+        -RGLB lib1 \
+        -RGPL illumina \
+        -RGPU unit1 \
+        -RGSM {params.sample} \
         --TMP_DIR {params.tmp} \
-        --CREATE_INDEX=true")
+        --CREATE_INDEX true")
         shell("rm -rf {params.tmp}")
 
 # Subsample high coverage bams
@@ -53,11 +53,11 @@ rule add_rg:
 # tested with nr = 10000 and nw = 400, failed
 rule bamqc:
     input:
-        "data/final_bams/lowcov/{bam}.subsample.dedup.bam"
+        "data/interm/mark_dups/{geno}.{merge_A}.{merge_B}.merged.rg.dedup.bam"
     output:
-        "reports/bamqc/final_bams/lowcov/{bam}_stats/genome_results.txt"
+        "reports/bamqc/merged/{geno}.{merge_A}.{merge_B}_stats/genome_results.txt"
     params:
-        dir = "reports/bamqc/final_bams/lowcov/{bam}_stats"
+        dir = "reports/bamqc/merged/{geno}.{merge_A}.{merge_B}_stats"
     run: 
         shell("qualimap bamqc \
         -bam {input} \
