@@ -14,8 +14,7 @@ BAM = glob_wildcards("data/final_bams/lowcov/{bam}.dedup.bam").bam
 #print(BAM)
 
 # MERGE contains a list of the bams that belong to each genotype (GENO)  so they can be merged
-#file = pd.read_csv("bams_to_merge.tsv", sep = "\t", header = 0)
-file = pd.read_csv("bams_to_merge2.tsv", sep = "\t", header = 0)
+file = pd.read_csv("bams_to_merge.tsv", sep = "\t", header = 0)
 MERGE_A = list(file.Merge_A)
 MERGE_B = list(file.Merge_B)
 GENO = list(file.Genotype)
@@ -40,9 +39,9 @@ CHROM = list(chr[0])
 # options = ["highcov", "lowcov"]
 COV = ["highcov"]
 
-# Number of intervals for GATK SplitIntervals
-INTERVALS = ["{:04d}".format(x) for x in list(range(200))]
-
+# Set SNP filtering parameters
+p = ["99"]
+miss = ["20"]
 
 # Rule all describes the final output of the pipeline
 rule all:
@@ -69,7 +68,9 @@ rule all:
 #        snp = expand("data/raw/vcf_bpres/lowcov/all.AG.lowcov.{chr}.raw.snps.vcf.gz", chr = CHROM),
 #        diag = expand("reports/filtering/lowcov/all.AG.lowcov.{chr}.table", chr = CHROM)
 #        hf = expand("data/processed/filtered_snps_bpres/lowcov/all.AG.lowcov.{chr}.filtered.nocall.vcf", chr = CHROM)
-        dp_diag = expand("reports/filtering/depth/lowcov/all.AG.lowcov.{chr}.filtered.nocall.table", chr = CHROM)
+#        dp_diag = expand("reports/filtering/depth/lowcov/all.AG.lowcov.{chr}.filtered.nocall.table", chr = CHROM)
+        dp_miss = expand("reports/filtering/depth/lowcov/all.AG.lowcov.{chr}.{p}_{miss}.txt", p = p, miss = miss, chr = CHROM),
+        grab_snps = expand(        "data/processed/filtered_snps_bpres/lowcov/all.AG.lowcov.{chr}.filtered.{p}.{miss}.snps.vcf.gz", p = p, miss = miss, chr = CHROM)
 
 # Rules
 #include: "rules/mapping.smk"

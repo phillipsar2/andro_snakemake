@@ -96,18 +96,19 @@ rule depth:
 # (6) Filter by genotype depth and missingness
 rule filter_depth:
     input:
-        vcf = "reports/filtering/depth/lowcov/all.AG.lowcov.{chr}.filtered.nocall.table",
-        p = "0.99",
-        miss = "0.2",
+        vcf = "reports/filtering/depth/lowcov/all.AG.lowcov.{chr}.filtered.nocall.table"
+#        p = {p},
+#        miss = {miss}
     output:
+        "reports/filtering/depth/lowcov/all.AG.lowcov.{chr}.{p}_{miss}.txt"
     script:
-        "scripts/genoDPfilter.R"
+        "/group/jrigrp6/andropogon_sequence/scripts/genoDPfilter.R"
 
 # needs a tab deliminated list of file containing regions to select
 rule keep_snps:
     input:
         vcf = "data/processed/filtered_snps_bpres/lowcov/all.AG.lowcov.{chr}.filtered.nocall.vcf",
-        snps = 
+        snps = "reports/filtering/depth/lowcov/all.AG.lowcov.{chr}.{p}_{miss}.txt"
     output:
         "data/processed/filtered_snps_bpres/lowcov/all.AG.lowcov.{chr}.filtered.{p}.{miss}.snps.vcf.gz"
     shell:
