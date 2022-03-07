@@ -2,27 +2,26 @@
 # Author: PoissionFilter function shared by Mitra Melon, script written by Alyssa Phillips
 # Date: 3/2/2022
 
+print("we are in!")
+
 library(data.table)
 
 # > Load vcf ----
 # DF is the gdepth file outputted from vcftools
-file <- as.character("reports/filtering/depth/lowcov/all.AG.lowcov.Chr07A.filtered.nocall.table")
+#file <- as.character("reports/filtering/depth/lowcov/all.AG.lowcov.scaffold_32.filtered.nocall.table")
 P = 0.99
 MISS = 0.2
 
-#file <- as.character(snakemake@input[[1]])
-# P = as.numeric(snakemake@input[[2]])
-# MISS = as.numeric(snakemake@input[[3]])
+file <- as.character(snakemake@input[[1]])
+#P = as.numeric(snakemake@input[[2]])
+#MISS = as.numeric(snakemake@input[[3]])
 
+print("file loaded")
 
 fname <-  strsplit(file, split = ".table")
 
 depth <- fread(file, header = T, sep = "\t") 
    
-# # > Specify cutoff for qpois and % missingness
-# p = 0.99
-# miss = 0.2 # percent of missing data that is allowed
-
 # > Filter data ----
 PoissonFilter=function(DF,p,miss){
   
@@ -73,6 +72,6 @@ paste0("Sites before filtering: ", dim(depth)[1])
 paste0("Sites after filtering: ", dim(good_snps)[1])
 
 # > Export table of good SNPs ----
-write.table(good_snps, paste0(fname,".",P,"_", MISS,".txt"), sep = "\t", row.names = F, col.names = F, quote = F)
-#write.table(good_snps, snakemake@output[[1]], sep = "\t", row.names = F, col.names = F, quote = F)
+#write.table(good_snps, paste0(fname,".",P,"_", MISS,".txt"), sep = "\t", row.names = F, col.names = F, quote = F)
+write.table(good_snps, snakemake@output[[1]], sep = "\t", row.names = F, col.names = F, quote = F)
 
