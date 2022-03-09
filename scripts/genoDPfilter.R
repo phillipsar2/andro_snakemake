@@ -1,27 +1,46 @@
+#!/usr/bin/env Rscript --vanilla
+
 # Title: Filtering SNPs by genotype depth
 # Author: PoissionFilter function shared by Mitra Melon, script written by Alyssa Phillips
 # Date: 3/2/2022
 
-print("we are in!")
-
 library(data.table)
+library(methods)
+library("argparser", lib.loc = "R_libs")
+
+# give the arugment a name
+ap <- arg_parser("Filtering by genotype depth")
+
+# add mandatory positional arguments (filename)
+ap <- add_argument(ap, "file", help = "Input file - output of GATK VariantsToTable with CHROM, POS, AND DP fields")
+
+# add additional arguments
+ap <- add_argument(ap, "--qpois", help = "p cutoff")
+ap <- add_argument(ap, "--miss", help = "missing data cutoff as decimal")
+
+# parse arguments
+argv <- parse_args(ap)
 
 # > Load vcf ----
 # DF is the gdepth file outputted from vcftools
 #file <- as.character("reports/filtering/depth/lowcov/all.AG.lowcov.scaffold_32.filtered.nocall.table")
-P = 0.99
-MISS = 0.2
+#P = 0.99
+#MISS = 0.2
 
-file <- as.character(snakemake@input[[1]])
+#file <- as.character(snakemake@input[[1]])
 #P = as.numeric(snakemake@input[[2]])
 #MISS = as.numeric(snakemake@input[[3]])
 
-print("file loaded")
+file <- as.character(argv$file)
+P <- as.numeric(paste0("0.", argv$qpois))
+MISS <- as.numeric(paste0("0.", argv$miss))
 
 fname <-  strsplit(file, split = ".table")
 
 depth <- fread(file, header = T, sep = "\t") 
    
+print("file loaded")
+
 # > Filter data ----
 PoissonFilter=function(DF,p,miss){
   
@@ -72,6 +91,5 @@ paste0("Sites before filtering: ", dim(depth)[1])
 paste0("Sites after filtering: ", dim(good_snps)[1])
 
 # > Export table of good SNPs ----
-#write.table(good_snps, paste0(fname,".",P,"_", MISS,".txt"), sep = "\t", row.names = F, col.names = F, quote = F)
-write.table(good_snps, snakemake@output[[1]], sep = "\t", row.names = F, col.names = F, quote = F)
-
+write.table(good_snps, paste0(fname,".",P,"_", MISS,".txt"), sep = "\t", row.names = F, col.names = F, quote = F)
+#write.table(good_snps, snakemake@output[[1]], sep = "\t", row.names = F, col.names = F, quote = F)

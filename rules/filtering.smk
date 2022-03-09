@@ -97,12 +97,13 @@ rule depth:
 rule filter_depth:
     input:
         vcf = "reports/filtering/depth/lowcov/all.AG.lowcov.{chr}.filtered.nocall.table"
-#        p = {p},
-#        miss = {miss}
     output:
         "reports/filtering/depth/lowcov/all.AG.lowcov.{chr}.{p}_{miss}.txt"
-    script:
-        "/group/jrigrp6/andropogon_sequence/scripts/genoDPfilter.R"
+    params:
+        p = "{p}",
+        miss = "{miss}"
+    shell:
+        "Rscript scripts/genoDPfilter.R {input.vcf} -q {params.p} -m {params.miss}"
 
 # needs a tab deliminated list of file containing regions to select
 rule keep_snps:
