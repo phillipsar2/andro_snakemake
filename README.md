@@ -28,6 +28,7 @@ Scripts are local in ~/Andropogon/nQuire. Ploidy was identified for 16 of 17 unk
 #5 SNP filtering
 - SNPs are extracted using GATK. VCFs are converted to table format with GATK to examine quality distributions and set hard filtering cutoffs.
 	-- Low coverage SNPs (unfiltered): 463,763,393
+        -- High coverage SNPs (unfiltered): 480,857,741
 - SNPs are hard filtered using GATK.
 	-- Lowcov: QUAL >= 30, MQ >= 30, biallelic 
 	-- Highcov:
@@ -35,7 +36,7 @@ Scripts are local in ~/Andropogon/nQuire. Ploidy was identified for 16 of 17 unk
 	-- Lowcov: min = 1, max = qpois(p = 0.99), < 20% missing data
 	-- Highcov:
 - Final filtered SNP counts:
-	-- Lowcov:
+	-- Lowcov: 11,707,655
 	-- Highcov:
 
 #6 Estimating genotype probabilities
