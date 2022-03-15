@@ -29,3 +29,32 @@ rule vcf2ADmatrix:
         ploidy = "{ploidy}"
     shell:
         "Rscript scripts/vcf2ADmatrix.R {input} --chr {params.chr} --ploidy {params.ploidy}"
+
+# (3) Run EBG
+
+rule ebg:
+    input:
+        tot = "data/ebg/lowcov/total_reads.{chr}.{ploidy}.txt",
+        alt = "data/ebg/lowcov/alt_reads.{chr}.{ploidy}.txt",
+        e = "data/ebg/lowcov/error_rate.{chr}.{ploidy}.txt",
+        samp = "data/ebg/lowcov/samples.{chr}.{ploidy}.txt",
+        loci = "data/ebg/lowcov/snp_positions.{chr}.{ploidy}.txt"
+    output:
+        "data/ebg/lowcov/{chr}.{ploidy}-PL.txt"
+    params:
+        p = "2",
+        pre = "data/ebg/lowcov/{chr}.{ploidy}"
+    shell:
+        """
+        samples=`wc -l {input.samp}`
+        loci=`wc -l {input.loci}`
+        ~/toolsfordayz/polyploid-genotyping/ebg/ebg diseq \
+        -t {input.tot} \
+        -a {input.alt} \
+        -e {input.e} \
+        -p {params.p} \
+        -n $samples \
+        -l $loci \
+        --iters 1000 \
+        --prefix {params.pre}
+        """

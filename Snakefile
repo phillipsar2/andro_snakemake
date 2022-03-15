@@ -46,7 +46,7 @@ miss = ["20"]
 
 # Set what ploidy group working with for GL calling
 # options = ["9x", "6x"]
-CYT = ["9x","6x"]
+CYT = ["6x"]
 
 # Rule all describes the final output of the pipeline
 rule all:
@@ -78,7 +78,8 @@ rule all:
 #        grab_snps = expand("data/processed/filtered_snps_bpres/lowcov/all.AG.lowcov.{chr}.filtered.{p}.{miss}.snps.vcf.gz", p = p, miss = miss, chr = CHROM)
         ## EBG
 #        split_ploidy = expand("data/processed/filtered_snps_bpres/lowcov/AG.lowcov.{chr}.{ploidy}.snps.vcf", chr = CHROM, ploidy = CYT)
-        ad_mat = expand("data/ebg/lowcov/total_reads.{chr}.{ploidy}.txt", chr = CHROM, ploidy = CYT)
+#        ad_mat = expand("data/ebg/lowcov/total_reads.{chr}.{ploidy}.txt", chr = CHROM, ploidy = CYT)
+        ebg = expand("data/ebg/lowcov/{chr}.{ploidy}-PL.txt", chr = CHROM, ploidy = CYT)
 
 # Rules
 #include: "rules/mapping.smk"
