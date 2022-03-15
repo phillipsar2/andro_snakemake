@@ -19,12 +19,13 @@ rule vcf2ADmatrix:
     input:
         "data/processed/filtered_snps_bpres/lowcov/AG.lowcov.{chr}.{ploidy}.snps.vcf"
     output:
-        "data/ebg/total_reads.{chr}.{ploidy}.txt",
-        "data/ebg/alt_reads.{chr}.{ploidy}.txt",
-        "data/ebg/error_rate.{chr}.{ploidy}.txt",
-        "data/ebg/samples.{chr}.{ploidy}.txt",
-        "data/ebg/snp_positions.{chr}.{ploidy}.txt"
-    script:
-        "/group/jrigrp6/andropogon_sequence/scripts/vcf2ADmatrix.R"
-#    shell:
-#        "Rscript scripts/genoDPfilter.R {input.vcf} -q {params.p} -m {params.miss}"
+        "data/ebg/lowcov/total_reads.{chr}.{ploidy}.txt",
+        "data/ebg/lowcov/alt_reads.{chr}.{ploidy}.txt",
+        "data/ebg/lowcov/error_rate.{chr}.{ploidy}.txt",
+        "data/ebg/lowcov/samples.{chr}.{ploidy}.txt",
+        "data/ebg/lowcov/snp_positions.{chr}.{ploidy}.txt"
+    params:
+        chr = "{chr}",
+        ploidy = "{ploidy}"
+    shell:
+        "Rscript scripts/vcf2ADmatrix.R {input} --chr {params.chr} --ploidy {params.ploidy}"

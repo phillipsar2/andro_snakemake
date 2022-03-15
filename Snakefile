@@ -27,9 +27,9 @@ filep = pd.read_csv("bams_nquire.csv", sep = "\t", header = None)
 UNKNOWN = list(filep[0])
 
 # List of genotypes and ploidy levels
-fileg = pd.read_csv(config.highcov, header = 0)
-PLOIDY = list(fileg.Ploidy)
-VCF = list(fileg.Sequencefile)
+#fileg = pd.read_csv(config.highcov, header = 0)
+#PLOIDY = list(fileg.Ploidy)
+#VCF = list(fileg.Sequencefile)
 
 # List of chromsomes
 #chr = pd.read_csv(config.contig_list, header = None)
@@ -43,8 +43,6 @@ COV = ["highcov"]
 # Set SNP filtering parameters
 p = ["99"]
 miss = ["20"]
-print(p)
-print(miss)
 
 # Set what ploidy group working with for GL calling
 # options = ["9x", "6x"]
@@ -79,7 +77,8 @@ rule all:
 #        dp_miss = expand("reports/filtering/depth/lowcov/all.AG.lowcov.{chr}.0.99_0.2.txt", p = p, miss = miss, chr = CHROM)
 #        grab_snps = expand("data/processed/filtered_snps_bpres/lowcov/all.AG.lowcov.{chr}.filtered.{p}.{miss}.snps.vcf.gz", p = p, miss = miss, chr = CHROM)
         ## EBG
-        split_ploidy = expand("data/processed/filtered_snps_bpres/lowcov/AG.lowcov.{chr}.{ploidy}.snps.vcf", chr = CHROM, ploidy = CYT)
+#        split_ploidy = expand("data/processed/filtered_snps_bpres/lowcov/AG.lowcov.{chr}.{ploidy}.snps.vcf", chr = CHROM, ploidy = CYT)
+        ad_mat = expand("data/ebg/lowcov/total_reads.{chr}.{ploidy}.txt", chr = CHROM, ploidy = CYT)
 
 # Rules
 #include: "rules/mapping.smk"
