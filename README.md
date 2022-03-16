@@ -31,7 +31,7 @@ Scripts are local in ~/Andropogon/nQuire. Ploidy was identified for 16 of 17 unk
         -- High coverage SNPs (unfiltered): 480,857,741
 - SNPs are hard filtered using GATK.
 	-- Lowcov: QUAL >= 30, MQ >= 30, biallelic 
-	-- Highcov:
+	-- Highcov: QUAL >= 30, MQ >= 30, biallelic
 - SNPs are filtered for genotype depth and missingness using a custom script (filter written by Mitra Melon)
 	-- Lowcov: min = 1, max = qpois(p = 0.99), < 20% missing data
 	-- Highcov:

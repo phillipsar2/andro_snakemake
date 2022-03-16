@@ -46,7 +46,7 @@ miss = ["20"]
 
 # Set what ploidy group working with for GL calling
 # options = ["9x", "6x"]
-CYT = ["6x"]
+CYT = ["9x"]
 
 # Rule all describes the final output of the pipeline
 rule all:
@@ -72,9 +72,9 @@ rule all:
 #        index = expand("data/vcf/{cov}/all.AG.{cov}.{chr}.raw.vcf.gz.tbi", chr = CHROM, cov = COV),
 #        snp = expand("data/raw/vcf_bpres/{cov}/all.AG.{cov}.{chr}.raw.snps.vcf.gz", chr = CHROM, cov = COV),
 #        diag = expand("reports/filtering/{cov}/all.AG.{cov}.{chr}.table", chr = CHROM, cov = COV)
-#        hf = expand("data/processed/filtered_snps_bpres/lowcov/all.AG.lowcov.{chr}.filtered.nocall.vcf", chr = CHROM)
-#        dp_diag = expand("reports/filtering/depth/lowcov/all.AG.lowcov.{chr}.filtered.nocall.table", chr = CHROM)
-#        dp_miss = expand("reports/filtering/depth/lowcov/all.AG.lowcov.{chr}.0.99_0.2.txt", p = p, miss = miss, chr = CHROM)
+#        hf = expand("data/processed/filtered_snps_bpres/{cov}/all.AG.{cov}.{chr}.filtered.nocall.vcf", chr = CHROM, cov = COV)
+#        dp_diag = expand("reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.table", chr = CHROM, cov = COV)
+#        dp_miss = expand("reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.0.99_0.2.txt", p = p, miss = miss, chr = CHROM, cov = COV)
 #        grab_snps = expand("data/processed/filtered_snps_bpres/lowcov/all.AG.lowcov.{chr}.filtered.{p}.{miss}.snps.vcf.gz", p = p, miss = miss, chr = CHROM)
         ## EBG
 #        split_ploidy = expand("data/processed/filtered_snps_bpres/lowcov/AG.lowcov.{chr}.{ploidy}.snps.vcf", chr = CHROM, ploidy = CYT)

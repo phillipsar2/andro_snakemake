@@ -53,9 +53,9 @@ rule diagnostics:
 rule filter_snps:
     input:
         ref = config.ref,
-        vcf = "data/raw/vcf_bpres/lowcov/all.AG.lowcov.{chr}.raw.snps.vcf.gz"
+        vcf = "data/raw/vcf_bpres/{cov}/all.AG.{cov}.{chr}.raw.snps.vcf.gz"
     output:
-        "data/processed/filtered_snps_bpres/lowcov/all.AG.lowcov.{chr}.filtered.snps.vcf"
+        "data/processed/filtered_snps_bpres/{cov}/all.AG.{cov}.{chr}.filtered.snps.vcf"
     run:
         shell("gatk VariantFiltration \
         -V {input.vcf} \
@@ -69,9 +69,9 @@ rule filter_snps:
 rule filter_nocall:
     input:
         ref = config.ref,
-        vcf = "data/processed/filtered_snps_bpres/lowcov/all.AG.lowcov.{chr}.filtered.snps.vcf"
+        vcf = "data/processed/filtered_snps_bpres/{cov}/all.AG.{cov}.{chr}.filtered.snps.vcf"
     output:
-        "data/processed/filtered_snps_bpres/lowcov/all.AG.lowcov.{chr}.filtered.nocall.vcf"
+        "data/processed/filtered_snps_bpres/{cov}/all.AG.{cov}.{chr}.filtered.nocall.vcf"
     run: 
         shell("gatk SelectVariants -V {input.vcf} --exclude-filtered true  --restrict-alleles-to BIALLELIC -O {output}")
         
@@ -80,10 +80,10 @@ rule filter_nocall:
 
 rule depth:
     input:
-        vcf = "data/processed/filtered_snps_bpres/lowcov/all.AG.lowcov.{chr}.filtered.nocall.vcf",
+        vcf = "data/processed/filtered_snps_bpres/{cov}/all.AG.{cov}.{chr}.filtered.nocall.vcf",
         ref = config.ref
     output:
-        dp = "reports/filtering/depth/lowcov/all.AG.lowcov.{chr}.filtered.nocall.table"
+        dp = "reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.table"
     run:
         shell("gatk VariantsToTable \
         -R {input.ref} \
