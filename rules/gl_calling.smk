@@ -42,7 +42,7 @@ rule ebg:
     output:
         "data/ebg/lowcov/{chr}.{ploidy}-PL.txt"
     params:
-        p = "2",
+        p = "3",
         pre = "data/ebg/lowcov/{chr}.{ploidy}"
     shell:
         """
@@ -57,4 +57,22 @@ rule ebg:
         -l $loci \
         --iters 1000 \
         --prefix {params.pre}
+        """
+
+# (4) convert EBG output to matrix format
+
+rule gl_mat:
+    input:
+        tot = "data/ebg/lowcov/total_reads.{chr}.6x.txt",
+        tot2 = "data/ebg/lowcov/total_reads.{chr}.9x.txt",
+        geno = "data/ebg/lowcov/samples.{chr}.6x.txt",
+        geno2 = "data/ebg/lowcov/samples.{chr}.9x.txt",
+        snps = "data/ebg/lowcov/snp_positions.{chr}.6x.txt",
+        pl_hex = "data/ebg/lowcov/{chr}.6x-PL.txt",
+        pl_enn = "data/ebg/lowcov/{chr}.9x-PL.txt"
+    output:
+        "data/ebg/lowcov/{chr}-GL.txt"
+    shell:
+        """
+        Rscript scripts/ebg2glmatrix_2ploidy.R --tot {input.tot} -p 2 --tot2 {input.tot2} --ploidy2 3 --geno {input.geno} --geno2 {input.geno2} -s {input.snps} {input.pl_hex} {input.pl_enn}
         """

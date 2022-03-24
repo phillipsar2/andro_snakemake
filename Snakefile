@@ -32,7 +32,7 @@ UNKNOWN = list(filep[0])
 #VCF = list(fileg.Sequencefile)
 
 # List of chromsomes
-#chr = pd.read_csv(config.contig_list, header = None)
+chr = pd.read_csv(config.contig_list, header = None)
 #CHROM = list(chr[0])
 CHROM = ["Chr01A","Chr01B","Chr01C","Chr02A","Chr02B","Chr02C","Chr03A","Chr03B","Chr03C","Chr04A","Chr04B","Chr04C","Chr05A","Chr05B","Chr05C","Chr06A","Chr06B","Chr06B","Chr06C","Chr07A","Chr07B","Chr07C","Chr08A","Chr08C","Chr08B","Chr09A","Chr09B","Chr09C","Chr10A","Chr10B","Chr10C","scaffold_144","scaffold_163","scaffold_32","scaffold_490","scaffold_542","scaffold_965"]
 
@@ -72,14 +72,15 @@ rule all:
 #        index = expand("data/vcf/{cov}/all.AG.{cov}.{chr}.raw.vcf.gz.tbi", chr = CHROM, cov = COV),
 #        snp = expand("data/raw/vcf_bpres/{cov}/all.AG.{cov}.{chr}.raw.snps.vcf.gz", chr = CHROM, cov = COV),
 #        diag = expand("reports/filtering/{cov}/all.AG.{cov}.{chr}.table", chr = CHROM, cov = COV)
-#        hf = expand("data/processed/filtered_snps_bpres/{cov}/all.AG.{cov}.{chr}.filtered.nocall.vcf", chr = CHROM, cov = COV)
+#        hf = expand("data/processed/filtered_snps_bpres/{cov}/all.AG.{cov}.{chr}.filtered.nocall.vcf", chr = CHROM, cov = COV),
 #        dp_diag = expand("reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.table", chr = CHROM, cov = COV)
 #        dp_miss = expand("reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.0.99_0.2.txt", p = p, miss = miss, chr = CHROM, cov = COV)
 #        grab_snps = expand("data/processed/filtered_snps_bpres/lowcov/all.AG.lowcov.{chr}.filtered.{p}.{miss}.snps.vcf.gz", p = p, miss = miss, chr = CHROM)
         ## EBG
 #        split_ploidy = expand("data/processed/filtered_snps_bpres/lowcov/AG.lowcov.{chr}.{ploidy}.snps.vcf", chr = CHROM, ploidy = CYT)
 #        ad_mat = expand("data/ebg/lowcov/total_reads.{chr}.{ploidy}.txt", chr = CHROM, ploidy = CYT)
-        ebg = expand("data/ebg/lowcov/{chr}.{ploidy}-PL.txt", chr = CHROM, ploidy = CYT)
+#        ebg = expand("data/ebg/lowcov/{chr}.{ploidy}-PL.txt", chr = CHROM, ploidy = CYT)
+        gl_mat = expand("data/ebg/lowcov/{chr}-GL.txt", chr = CHROM)
 
 # Rules
 #include: "rules/mapping.smk"

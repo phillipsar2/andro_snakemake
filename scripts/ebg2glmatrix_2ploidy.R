@@ -92,6 +92,8 @@ for (i in 1:l){
   pl_mat[i,][which(read_counts[i,]!=-9)] <- as.vector(na.omit(pl[i,]))
 }
 
+print("formatted matrix")
+
 # Replace NAs w/ the appropriate amount of zeros 
 for(i in 1:nrow(pl_mat)){
   for(j in 1:ncol(pl_mat)){
@@ -101,9 +103,13 @@ for(i in 1:nrow(pl_mat)){
   }
 }
 
+print("replaced NAs w/ zeros")
+
 # > Read in second PL file ----
 pl2 <- readLines(pl_file2) %>% str_split(pattern = "\t", simplify = TRUE) 
 pl2 <- apply(pl2, 2, function(x) gsub("^$|^ $", NA, x)) # replace blanks with NA
+
+print("read in second file")
 
 # load EBG input -- the total read counts matrix
 read_counts_file2 <- read.csv(reads_file2, sep = "\t", header = F )
@@ -120,6 +126,8 @@ for (i in 1:l){
   pl_mat2[i,][which(read_counts2[i,]!=-9)] <- as.vector(na.omit(pl2[i,]))
 }
 
+print("formatted second matrix")
+
 # Replace NAs w/ the appropriate amount of zeros 
 for(i in 1:nrow(pl_mat2)){
   for(j in 1:ncol(pl_mat2)){
@@ -129,12 +137,15 @@ for(i in 1:nrow(pl_mat2)){
   }
 }
 
+print("replaced NAs with zeros")
+
 # > Add genotype information ----
 colnames(pl_mat) <- unlist(genos$V1)
 colnames(pl_mat2) <- unlist(genos2$V1)
 
 # > bind the two dataframes together ----
 pl_all <- cbind(pl_mat, pl_mat2)
+
 
 # > Add SNP position information ----
 rownames(pl_all) <- unlist(pos)

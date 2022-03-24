@@ -32,8 +32,14 @@ argv <- parse_args(ap)
 #MISS = as.numeric(snakemake@input[[3]])
 
 file <- as.character(argv$file)
-P <- as.numeric(paste0("0.", argv$qpois))
-MISS <- as.numeric(paste0("0.", argv$miss))
+#P <- as.numeric(paste0("0.", argv$qpois))
+#MISS <- as.numeric(paste0("0.", argv$miss))
+
+P <- as.numeric(argv$qpois)
+MISS <- as.numeric(argv$miss)
+
+print(P)
+print(MISS)
 
 fname <-  strsplit(file, split = ".table")
 
