@@ -4,6 +4,7 @@
 
 library(stringr)
 library(MASS)
+library(dplyr)
 library("argparser", lib.loc = "R_libs")
 
 # > commandArgs ----
@@ -144,7 +145,8 @@ colnames(pl_mat) <- unlist(genos$V1)
 colnames(pl_mat2) <- unlist(genos2$V1)
 
 # > bind the two dataframes together ----
-pl_all <- cbind(pl_mat, pl_mat2)
+#pl_all <- cbind(pl_mat, pl_mat2)
+pl_all <- dplyr::bind_cols(pl_mat, pl_mat2)
 
 
 # > Add SNP position information ----
