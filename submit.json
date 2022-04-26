@@ -1,8 +1,8 @@
 {
     "__default__" :
     {
-      "p" : "bigmemm",
-      "mem" : "16G",
+      "p" : "high2",
+      "mem" : "8G",
       "time" : "7-00:00",
       "name": "rando",
 #      "name": "{rule}_{wildcards}",
@@ -67,36 +67,6 @@
       "name" : "run_GMM",
       "cpus-per-task": 8,
     },
-    "calc_AB" :
-    {
-      "p" : "bigmemm",
-      "mem" : "32G",
-      "time" : "7-00:00",
-      "name" : "calc_AB"
-    },
-    "haplotype_caller" :
-    {
-      "p" : "bigmemh",
-      "mem" : "48G",
-      "time" : "30-00:00",
-      "name" : "haplotype_caller",
-      "cpus-per-task": 6,
-    },
-    "combine_gvcfs" :
-    {
-      "p" : "bigmemm",
-      "mem" : "32G",
-      "time" : "30-00:00",
-      "name" : "combine_gvcfs",
-      "cpus-per-task": 8,
-    },
-    "joint_genotyping" :
-    {
-      "p" : "bigmemm",
-      "mem" : "32G",
-      "time" : "30-00:00",
-      "name" : "jointgenotyping"
-    },
     "mpileup" :
     {
       "mem": "64G",
@@ -104,5 +74,26 @@
       "time" : "14-00:00",
       "name" : "mpileup",
       "cpus-per-task": 8,
+    },
+    "filter_depth" :
+    {
+      "mem": "64G",
+      "p" : "bigmemm",
+      "time" : "14-00:00",
+      "name" : "filter_depth",
+    },
+    "ebg" :
+    {
+      "mem": "8G",
+      "p" : "bigmemm",
+      "time" : "14-00:00",
+      "name" : "ebg",
+    },
+    "gl_mat" :
+    {
+      "mem": "8G",
+      "p" : "bigmemh",
+      "time" : "14-00:00",
+      "name" : "gl_mat",
     }
 }

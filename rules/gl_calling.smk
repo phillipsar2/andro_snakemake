@@ -7,7 +7,7 @@ rule split_ploidy:
         vcf = "data/processed/filtered_snps_bpres/lowcov/all.AG.lowcov.{chr}.filtered.99.20.snps.vcf.gz",
         geno = "{ploidy}.lowcov.samples.csv"
     output:
-        "data/processed/filtered_snps_bpres/lowcov/AG.lowcov.{chr}.{ploidy}.snps.vcf"
+        temp("data/processed/filtered_snps_bpres/lowcov/AG.lowcov.{chr}.{ploidy}.snps.vcf")
     shell:
         """
         bcftools view -S {input.geno} --force-samples {input.vcf} > {output}
@@ -31,6 +31,7 @@ rule vcf2ADmatrix:
         "Rscript scripts/vcf2ADmatrix.R {input} --chr {params.chr} --ploidy {params.ploidy}"
 
 # (3) Run EBG
+# need to manually change p from 2 to 3
 
 rule ebg:
     input:
@@ -42,7 +43,7 @@ rule ebg:
     output:
         "data/ebg/lowcov/{chr}.{ploidy}-PL.txt"
     params:
-        p = "3",
+        p = "2",
         pre = "data/ebg/lowcov/{chr}.{ploidy}"
     shell:
         """
@@ -76,3 +77,16 @@ rule gl_mat:
         """
         Rscript scripts/ebg2glmatrix_2ploidy.R --tot {input.tot} -p 2 --tot2 {input.tot2} --ploidy2 3 --geno {input.geno} --geno2 {input.geno2} -s {input.snps} {input.pl_hex} {input.pl_enn}
         """
+
+# (5) Merge GL.txt files and ranomly select 10k snps
+
+#rule 10k_snps:
+#    input:
+#        expand("data/ebg/lowcov/{chr}-GL.txt", chr = CHROM)
+#    output:
+#        "data/ebg/lowcov/10k_lowcov-GL.txt"
+#    shell:
+#        """
+#        head -n1 data/ebg/lowcov/Chr01A-GL.txt > {output}
+#        shuf -n 10000 <(cat data/ebg/lowcov/*-GL.txt) >> {output}
+#        """

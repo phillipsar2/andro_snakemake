@@ -96,13 +96,8 @@ for (i in 1:l){
 print("formatted matrix")
 
 # Replace NAs w/ the appropriate amount of zeros 
-for(i in 1:nrow(pl_mat)){
-  for(j in 1:ncol(pl_mat)){
-    if(is.na(pl_mat[i,j])){
-      pl_mat[i,j][[1]] <- paste(as.character( rep(x = 0, times = p+1) ), sep="' '", collapse=",")
-    }
-  }
-}
+pl_mat_dat <- as.data.frame(pl_mat) # convert to df
+pl_mat_dat[is.na(pl_mat_dat)] <- paste(as.character( rep(x = 0, times = p2+1) ), sep="' '", collapse=",")
 
 print("replaced NAs w/ zeros")
 
@@ -130,23 +125,18 @@ for (i in 1:l){
 print("formatted second matrix")
 
 # Replace NAs w/ the appropriate amount of zeros 
-for(i in 1:nrow(pl_mat2)){
-  for(j in 1:ncol(pl_mat2)){
-    if(is.na(pl_mat2[i,j])){
-      pl_mat2[i,j][[1]] <- paste(as.character( rep(x = 0, times = p2+1) ), sep="' '", collapse=",")
-    }
-  }
-}
+pl_mat2_dat <- as.data.frame(pl_mat2) # convert to df
+pl_mat2_dat[is.na(pl_mat2)_dat)] <- paste(as.character( rep(x = 0, times = p2+1) ), sep="' '", collapse=",")
 
 print("replaced NAs with zeros")
 
 # > Add genotype information ----
-colnames(pl_mat) <- unlist(genos$V1)
-colnames(pl_mat2) <- unlist(genos2$V1)
+colnames(pl_mat_dat) <- unlist(genos$V1)
+colnames(pl_mat2_dat) <- unlist(genos2$V1)
 
 # > bind the two dataframes together ----
 #pl_all <- cbind(pl_mat, pl_mat2)
-pl_all <- dplyr::bind_cols(pl_mat, pl_mat2)
+pl_all <- dplyr::bind_cols(pl_mat_dat, pl_mat2_dat)
 
 
 # > Add SNP position information ----
