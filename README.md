@@ -40,7 +40,15 @@ Scripts are local in ~/Andropogon/nQuire. Ploidy was identified for 16 of 17 unk
 	-- Highcov:
 
 #6 Estimating genotype probabilities
-- Using a custom R script that utilizes vcfR, I extract the matrices for total read count and alternate read count
-- Then I use EBG to calculate phred-scaled genotype probabilites
-- The phred-scaled genotype probs are converted to mpgl format using a custom script
+Low coverage SNPs:
+- The vcfs are split by ploidy using bcftools view
+- Using a custom R script that utilizes vcfR (scripts/vcf2ADmatrix.R), I extracted the matrices for total read count and alternate read count
+- I ran EBG independently on each ploidy to calculate phred-scaled genotype probabilites (1000 interactions; error = 0.01)
+- The phred-scaled genotype likelihood EBG output was converted to a matrix and the files for each ploidy were combined using a custom script (scripts/ebg2glmatrix_2ploidy.R)
+
+
+#7 ENTROPY
+Low cov SNPs:
+- 10k random SNPs were selected and the subsequent GL matrix was converted to mpgl format using a custom script (scripts/glmat2mpgl.R)
+- ENTROPY was run with default burn-in and MCMC steps. Every 5th step was recorded after burn-in (-t 5) and ENTROPY was run for k=c(2:14)
 

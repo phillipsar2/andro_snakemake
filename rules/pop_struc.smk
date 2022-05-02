@@ -17,7 +17,7 @@ rule ent_in:
 
 # (2) Run ENTROPY
 # not sure if I can actually activate a conda env in a snakemake rule?? might have to run it sepearately outside snakemake
-# run with default burn-in of 1000 (-b 1000) and 1000 MCMC steps (-l 1000); store every 5 step after burn-in (-t 5)
+# run with default burn-in of 1000 (-b 1000) and 10000 MCMC steps (-l 10000); store every 5 step after burn-in (-t 5)
 # recommends running three times
 #rule entropy:
     input:

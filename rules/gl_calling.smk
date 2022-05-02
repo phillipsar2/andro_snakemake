@@ -79,6 +79,7 @@ rule gl_mat:
         """
 
 # (5) Merge GL.txt files and ranomly select 10k snps
+# double-check no header lines were randomly selected afterwards
 
 #rule 10k_snps:
 #    input:
@@ -88,5 +89,5 @@ rule gl_mat:
 #    shell:
 #        """
 #        head -n1 data/ebg/lowcov/Chr01A-GL.txt > {output}
-#        shuf -n 10000 <(cat data/ebg/lowcov/*-GL.txt) >> {output}
+#        shuf -n 10000 <(cat {input}) >> {output}
 #        """
