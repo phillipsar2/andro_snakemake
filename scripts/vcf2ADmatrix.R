@@ -3,6 +3,7 @@
 ### Date: 1/21/2022
 
 library(vcfR, lib.loc = "R_libs")
+library("memuse", lib.loc = "R_libs")
 library("argparser", lib.loc = "R_libs")
 
 # input is a sorted vcf w/ header for a single ploidy level

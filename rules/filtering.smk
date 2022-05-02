@@ -96,9 +96,9 @@ rule depth:
 # (6) Filter by genotype depth and missingness
 rule filter_depth:
     input:
-        vcf = "reports/filtering/depth/lowcov/all.AG.lowcov.{chr}.filtered.nocall.table"
+        vcf = "reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.table"
     output:
-        "reports/filtering/depth/lowcov/all.AG.lowcov.{chr}.filtered.nocall.0.99_0.2.txt"
+        "reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.0.99_0.2.txt"
     params:
 #        p = "{p}",
 #        miss = "{miss}"
@@ -111,12 +111,12 @@ rule filter_depth:
 rule keep_snps:
     input:
 #        vcf = "data/processed/filtered_snps_bpres/lowcov/all.AG.lowcov.{chr}.filtered.nocall.vcf",
-        vcf = "data/processed/filtered_snps_bpres/lowcov/all.AG.lowcov.{chr}.filtered.nocall.vcf.gz",
-        snps = "reports/filtering/depth/lowcov/all.AG.lowcov.{chr}.filtered.nocall.0.99_0.2.txt"
+        vcf = "data/processed/filtered_snps_bpres/{cov}/all.AG.{cov}.{chr}.filtered.nocall.vcf.gz",
+        snps = "reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.0.99_0.2.txt"
 #    params:
 #        vcf = "data/processed/filtered_snps_bpres/lowcov/all.AG.lowcov.{chr}.filtered.nocall.vcf.gz"
     output:
-        "data/processed/filtered_snps_bpres/lowcov/all.AG.lowcov.{chr}.filtered.{p}.{miss}.snps.vcf.gz"
+        "data/processed/filtered_snps_bpres/{cov}/all.AG.{cov}.{chr}.filtered.{p}.{miss}.snps.vcf.gz"
     shell:
         """
 #        bgzip {input.vcf}
