@@ -98,29 +98,31 @@ rule filter_depth:
     input:
         vcf = "reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.table"
     output:
-        "reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.0.99_0.2.txt"
+#        "reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.0.99_0.2.txt"
+        "reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.0.99_0.2_8.txt"
     params:
 #        p = "{p}",
 #        miss = "{miss}"
         p = "0.99",
-        miss = "0.2"
+        miss = "0.2",
+        min = "8"
     shell:
-        "Rscript scripts/genoDPfilter.R {input.vcf} -q {params.p} -m {params.miss}"
+        "Rscript scripts/genoDPfilter.R {input.vcf} -q {params.p} -m {params.miss} --min {params.min}"
 
 # needs a tab deliminated list of file containing regions to select
 rule keep_snps:
     input:
 #        vcf = "data/processed/filtered_snps_bpres/lowcov/all.AG.lowcov.{chr}.filtered.nocall.vcf",
-        vcf = "data/processed/filtered_snps_bpres/{cov}/all.AG.{cov}.{chr}.filtered.nocall.vcf.gz",
+        vcf = "data/processed/filtered_snps_bpres/{cov}/all.AG.{cov}.{chr}.filtered.nocall.vcf",
         snps = "reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.0.99_0.2.txt"
-#    params:
-#        vcf = "data/processed/filtered_snps_bpres/lowcov/all.AG.lowcov.{chr}.filtered.nocall.vcf.gz"
+    params:
+        gz = "data/processed/filtered_snps_bpres/{cov}/all.AG.{cov}.{chr}.filtered.nocall.vcf.gz"
     output:
         "data/processed/filtered_snps_bpres/{cov}/all.AG.{cov}.{chr}.filtered.{p}.{miss}.snps.vcf.gz"
     shell:
         """
-#        bgzip {input.vcf}
-        tabix -p vcf {input.vcf}
+        bgzip {input.vcf}
+        tabix -p vcf {params.gz}
         bcftools view -R {input.snps} -Oz -o {output} {input.vcf}
         """
 

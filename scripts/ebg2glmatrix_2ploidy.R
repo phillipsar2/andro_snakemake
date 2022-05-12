@@ -95,10 +95,18 @@ for (i in 1:l){
 
 print("formatted matrix")
 
-# Replace NAs w/ the appropriate amount of zeros 
-pl_mat_dat <- as.data.frame(pl_mat) # convert to df
-pl_mat_dat[is.na(pl_mat_dat)] <- paste(as.character( rep(x = 0, times = p2+1) ), sep="' '", collapse=",")
+# convert to dataframe
+pl_mat_dat <- as.data.frame(pl_mat)
 
+# Replace NAs w/ the appropriate amount of zeros 
+#pl_mat_dat[is.na(pl_mat_dat)] <- paste(as.character( rep(x = 0, times = p2+1) ), sep="' '", collapse=",")
+
+for(i in 1:ncol(pl_mat_dat)){
+  levels(pl_mat_dat[,i]) <- c(levels(pl_mat_dat[,i]), paste(as.character( rep(x = 0, times = p+1) ), sep="' '", collapse=","))
+} 
+pl_mat_dat[is.na(pl_mat_dat)] <- paste(as.factor( rep(x = 0, times = p+1) ), sep="' '", collapse=",")
+
+sum(is.na(pl_mat_dat))
 print("replaced NAs w/ zeros")
 
 # > Read in second PL file ----
@@ -124,10 +132,18 @@ for (i in 1:l){
 
 print("formatted second matrix")
 
-# Replace NAs w/ the appropriate amount of zeros 
-pl_mat2_dat <- as.data.frame(pl_mat2) # convert to df
-pl_mat2_dat[is.na(pl_mat2)_dat)] <- paste(as.character( rep(x = 0, times = p2+1) ), sep="' '", collapse=",")
+# convert to dataframe
+pl_mat2_dat <- as.data.frame(pl_mat2)
 
+# Replace NAs w/ the appropriate amount of zeros 
+#pl_mat2_dat[is.na(pl_mat2_dat)] <- paste(as.character( rep(x = 0, times = p2+1) ), sep="' '", collapse=",")
+
+for(i in 1:ncol(pl_mat2_dat)){
+  levels(pl_mat2_dat[,i]) <- c(levels(pl_mat2_dat[,i]), paste(as.character( rep(x = 0, times = p2+1) ), sep="' '", collapse=","))
+} 
+pl_mat2_dat[is.na(pl_mat2_dat)] <- paste(as.factor( rep(x = 0, times = p2+1) ), sep="' '", collapse=",")
+
+sum(is.na(pl_mat2_dat))
 print("replaced NAs with zeros")
 
 # > Add genotype information ----

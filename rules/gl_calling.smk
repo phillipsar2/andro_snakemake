@@ -78,7 +78,7 @@ rule gl_mat:
         Rscript scripts/ebg2glmatrix_2ploidy.R --tot {input.tot} -p 2 --tot2 {input.tot2} --ploidy2 3 --geno {input.geno} --geno2 {input.geno2} -s {input.snps} {input.pl_hex} {input.pl_enn}
         """
 
-# (5) Merge GL.txt files and ranomly select 10k snps
+# (5a) Merge GL.txt files and ranomly select 10k snps
 # double-check no header lines were randomly selected afterwards
 
 #rule 10k_snps:
@@ -91,3 +91,12 @@ rule gl_mat:
 #        head -n1 data/ebg/lowcov/Chr01A-GL.txt > {output}
 #        shuf -n 10000 <(cat {input}) >> {output}
 #        """
+
+# (5b) Select sites with less than 5% missing data
+rule filt_miss:
+    input:
+        "data/ebg/lowcov/{chr}-GL.txt"
+    output:
+        "data/ebg/lowcov/{chr}.miss5-GL.txt"
+    shell:
+        "Rscript scripts/strict_missing_data.R {input}"

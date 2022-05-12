@@ -17,6 +17,7 @@ ap <- add_argument(ap, "file", help = "Input file - output of GATK VariantsToTab
 # add additional arguments
 ap <- add_argument(ap, "--qpois", help = "p cutoff")
 ap <- add_argument(ap, "--miss", help = "missing data cutoff as decimal")
+ap <- add_argument(ap, "--min", help = "minimum depth cutoff")
 
 # parse arguments
 argv <- parse_args(ap)
@@ -37,6 +38,7 @@ file <- as.character(argv$file)
 
 P <- as.numeric(argv$qpois)
 MISS <- as.numeric(argv$miss)
+MIN <- as.numeric(argv$min)
 
 print(P)
 print(MISS)
@@ -73,7 +75,7 @@ PoissonFilter=function(DF,p,miss){
   }
   
   # Mark sites NA if the are less than the minimum depth of 1
-  ORIG[ORIG < 1] <- NA
+  ORIG[ORIG < MIN] <- NA
   
   # Count the number of NAs for each site
   avgNA = apply(ORIG, 1, function(X) sum( is.na(X) ))
@@ -97,5 +99,5 @@ paste0("Sites before filtering: ", dim(depth)[1])
 paste0("Sites after filtering: ", dim(good_snps)[1])
 
 # > Export table of good SNPs ----
-write.table(good_snps, paste0(fname,".",P,"_", MISS,".txt"), sep = "\t", row.names = F, col.names = F, quote = F)
+write.table(good_snps, paste0(fname,".",P,"_",MISS,"_", MIN,".txt"), sep = "\t", row.names = F, col.names = F, quote = F)
 #write.table(good_snps, snakemake@output[[1]], sep = "\t", row.names = F, col.names = F, quote = F)
