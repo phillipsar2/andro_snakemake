@@ -34,10 +34,10 @@ Scripts are local in ~/Andropogon/nQuire. Ploidy was identified for 16 of 17 unk
 	-- Highcov: QUAL >= 30, MQ >= 30, biallelic
 - SNPs are filtered for genotype depth and missingness using a custom script (filter written by Mitra Melon)
 	-- Lowcov: min = 1, max = qpois(p = 0.99), < 20% missing data
-	-- Highcov: 
+	-- Highcov: min = 8, max = qpois(p = 0.99), < 20% missing data
 - Final filtered SNP counts:
 	-- Lowcov: 11,707,655
-	-- Highcov: 
+	-- Highcov: 102,242,020
 
 #6 Estimating genotype probabilities
 Low coverage SNPs:
@@ -52,3 +52,22 @@ Low cov SNPs:
 - 10k random SNPs were selected and the subsequent GL matrix was converted to mpgl format using a custom script (scripts/glmat2mpgl.R)
 - ENTROPY was run with default burn-in and MCMC steps. Every 5th step was recorded after burn-in (-t 5) and ENTROPY was run for k=c(2:14)
 
+
+#8 PCA
+High cov SNPs:
+- ANGSD was utilized to estimate GLs and then run a PCA (PCangsd) as all individuals are 6x
+- Genotype likelihoods were estimated directly from the BAMs using the Samtools method (-GL 1) assuming the reference allele is the major allele (-doMajorMinor 4). 
+- Reads with multiple best hits (-uniqueOnly 1) and flags above 255 ( -remove_bads 1) were removed and only proper pairs were included (-only_proper_pairs 1).
+- Sites with a mapping quality below 30 (-minMapQ 30), a minimum base quality score of 30 (-minQ 30), \
+and a total sequencing depth below 8 and above 70 (-doCounts 1 -setMinDepthInd 8 -setMaxDepthInd 70) were dropped. The maximum number of missing genotypes allowed at a site was 8 (-minInd 8).
+- Genotype likelihoods were output as a beagle file (-doGlf 2).
+- 30K sites were randomly grabbed from the beagle file using shuf.
+- The PCA was ran with PCangsd using default settings. The PCA was plotted in R with ggplot2.
+
+Low cov SNPs:
+- The GL table was filtered for X% missing data. This left a total of X SNPs.
+- 20K SNPs were randomly selected using 'shuf'.
+- Individual allele frequencies were calculated in R using a custom script. 
+- Allele frequencies were standardized seperately for each ploidy using a Patterson's standardization.\
+ This standardization method properly accounts for the difference in variation between the two cytotypes.
+- A PCA was ran in R using 'prcomp' on the standardized allele frequencies. Results were plotted with ggplot2.

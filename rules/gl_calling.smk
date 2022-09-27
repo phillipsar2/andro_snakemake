@@ -92,11 +92,37 @@ rule gl_mat:
 #        shuf -n 10000 <(cat {input}) >> {output}
 #        """
 
-# (5b) Select sites with less than 5% missing data
+# for high cov:
+# head -n1 data/processed/filtered_snps_bpres/highcov/all.AG.highcov.Chr01A.PL.txt > data/processed/filtered_snps_bpres/highcov/10k_highcov-PL.txt
+# shuf -n 10000 <(cat data/processed/filtered_snps_bpres/highcov/*.PL.txt) >> data/processed/filtered_snps_bpres/highcov/10k_highcov-PL.txt
+
+# (5b) Select sites with less than X% missing data
 rule filt_miss:
     input:
-        "data/ebg/lowcov/{chr}-GL.txt"
+        "data/ebg/lowcov/genoliks/{chr}-GL.txt"
     output:
-        "data/ebg/lowcov/{chr}.miss5-GL.txt"
+#        "data/ebg/lowcov/{chr}.miss5-GL.txt"
+        "data/ebg/lowcov/genoliks/{chr}.miss20-GL.txt"
     shell:
         "Rscript scripts/strict_missing_data.R {input}"
+
+
+# ----------- High coverage -------------
+
+# (1) grab GL from the vcfs
+rule grab_gl:
+    input:
+        vcf = "data/processed/filtered_snps_bpres/{cov}/all.AG.{cov}.{chr}.filtered.99.20.snps.vcf.gz",
+        ref = config.ref
+    output:
+        "data/processed/filtered_snps_bpres/{cov}/all.AG.{cov}.{chr}.PL.txt"
+    shell:
+        """
+        gatk IndexFeatureFile -I {input.vcf}
+        gatk VariantsToTable \
+        -R {input.ref} \
+        -V {input.vcf} \
+        -F CHROM -F POS -GF PL \
+        -O {output}
+        """
+
