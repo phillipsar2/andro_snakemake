@@ -3,10 +3,11 @@
 ## Date: 5/11/22
 
 library("argparser", lib.loc = "R_libs")
+library(stringr)
 
 # > commandArgs ----
 # give the arugment a name
-ap <- arg_parser("grab SNPs with less than 5 percent missing data")
+ap <- arg_parser("grab SNPs with less than X percent missing data")
 
 # add mandatory positional arguments (filename)
 ap <- add_argument(ap, "gl", help = "GL matrix")
@@ -36,11 +37,15 @@ miss$site <- rownames(gl_tab)
 #hist(miss$per)
 
 # of snps under 5%
-paste0("number of snps under 5%:", sum(miss$per <= 5))
+paste0("total number of snps before filtering:", dim(gl_tab)[1])
+#paste0("number of snps under 5%:", sum(miss$per <= 5))
+paste0("number of snps under 20%:", sum(miss$per <= 20))
 
 # grab snps
-good <- gl_tab[miss$per <=5, ]
+#good <- gl_tab[miss$per <=5, ]
+good <- gl_tab[miss$per <=20, ]
 dim(good)
 
 # export the good snps
-write.table(good, file = paste0(fname, ".miss5-GL.txt"), quote = F)
+#write.table(good, file = paste0(fname, ".miss5-GL.txt"), quote = F)
+write.table(good, file = paste0(fname, ".miss20-GL.txt"), quote = F)

@@ -31,15 +31,19 @@ UNKNOWN = list(filep[0])
 #PLOIDY = list(fileg.Ploidy)
 #VCF = list(fileg.Sequencefile)
 
-# List of chromsomes
-chr = pd.read_csv(config.contig_list, header = None)
+# List of all chromsomes
+#chr = pd.read_csv(config.contig_list, header = None)
 #CHROM = list(chr[0])
 ## low cov scaffolds w sites not filtered out (some lost entirely)
 CHROM = ["Chr01A","Chr01B","Chr01C","Chr02A","Chr02B","Chr02C","Chr03A","Chr03B","Chr03C","Chr04A","Chr04B","Chr04C","Chr05A","Chr05B","Chr05C","Chr06A","Chr06B","Chr06B","Chr06C","Chr07A","Chr07B","Chr07C","Chr08A","Chr08C","Chr08B","Chr09A","Chr09B","Chr09C","Chr10A","Chr10B","Chr10C","scaffold_144","scaffold_163","scaffold_32","scaffold_490","scaffold_542","scaffold_965"]
+## high cov scaffolds w sites not filtered out (some lost entirely)
+#CHROM =  ["Chr01A", "Chr01B", "Chr01C", "Chr02A", "Chr02C", "Chr02B", "Chr03A", "Chr03B", "Chr03C", "Chr04A", "Chr04B", "Chr04C", "Chr05A", "Chr05B", "Chr05C", "Chr06A", "Chr06B", "Chr06C", "Chr07A", "Chr07B", "Chr07C", "Chr08A", "Chr08B", "Chr08C", "Chr09A", "Chr09B", "Chr09C", "Chr10A", "Chr10B", "Chr10C", "scaffold_144", "scaffold_163", "scaffold_263", "scaffold_32", "scaffold_490", "scaffold_542", "scaffold_590", "scaffold_64", "scaffold_965"]
+#print(CHROM)
+
 
 # Select working with high or low coverge samples for SNP calling 
 # options = ["highcov", "lowcov"]
-COV = ["highcov"]
+COV = ["lowcov"]
 
 # Set SNP filtering parameters
 p = ["99"]
@@ -48,6 +52,12 @@ miss = ["20"]
 # Set what ploidy group working with for GL calling
 # options = ["9x", "6x"]
 CYT = ["6x"]
+
+# number of admixture groups (k) - for 14 groups do range(15))
+K = list(range(2,15))
+
+# which chain are we currently running for entropy?
+CHAIN = ["1"]
 
 # Rule all describes the final output of the pipeline
 rule all:
@@ -77,17 +87,24 @@ rule all:
 #        dp_diag = expand("reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.table", chr = CHROM, cov = COV),
 #        dp_miss = expand("reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.0.99_0.2.txt", p = p, miss = miss, chr = CHROM, cov = COV)
 #        dp_miss = expand("reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.0.99_0.2_8.txt", chr = CHROM, cov = COV),
-#        grab_snps = expand("data/processed/filtered_snps_bpres/{cov}/all.AG.{cov}.{chr}.filtered.{p}.{miss}.snps.vcf.gz", cov = COV, p = p, miss = miss, chr = CHROM)
+#        grab_snps = expand("data/processed/filtered_snps_bpres/{cov}/all.AG.{cov}.{chr}.filtered.{p}.{miss}.snps.vcf.gz", cov = COV, p = p, miss = miss, chr = CHROM),
+#        grab_gl = expand("data/processed/filtered_snps_bpres/{cov}/all.AG.{cov}.{chr}.PL.txt", cov = COV, chr = CHROM)
         ## EBG
 #        split_ploidy = expand("data/processed/filtered_snps_bpres/lowcov/AG.lowcov.{chr}.{ploidy}.snps.vcf", chr = CHROM, ploidy = CYT),
 #        ad_mat = expand("data/ebg/lowcov/total_reads.{chr}.{ploidy}.txt", chr = CHROM, ploidy = CYT),
 #        ebg = expand("data/ebg/lowcov/{chr}.{ploidy}-PL.txt", chr = CHROM, ploidy = CYT),
 #        gl_mat = expand("data/ebg/lowcov/{chr}-GL.txt", chr = CHROM),
 #        rand_snps = "data/ebg/lowcov/10k_lowcov-GL.txt"
-        file_miss = expand("data/ebg/lowcov/{chr}.miss5-GL.txt", chr = CHROM)
-
+        filt_miss = expand("data/ebg/lowcov/genoliks/{chr}.miss20-GL.txt", chr = CHROM)
         ## ENTROPY
-#         ent_in = "data/entropy/lowcov/10k_lowcov.mpgl",
+#         ent_in = "data/entropy/lowcov/10k_lowcov.miss5.mpgl",
+#        ent_in_tab = "data/entropy/highov/10k_highcov.mpgl"
+#        entropy = expand("data/entropy/{cov}/10k_{cov}.{k}.{chain}.hdf5", cov = COV, k = K, chain = CHAIN)
+#        ent_out = expand("data/entropy/{cov}/qest.k{k}.c{chain}.txt", cov = COV, k = K, chain = CHAIN)
+        ## ANGSD - highcov only
+#        pca =  expand("data/angsd/pca/highcov.{chrom}.8dp70.beagle.gz", chrom = CHROM)
+#        pcaangsd = "data/angsd/pca/highcov.merged.8dp70.cov"
+
 
 ## Rules
 #include: "rules/mapping.smk"
