@@ -95,5 +95,12 @@
       "p" : "bigmemh",
       "time" : "14-00:00",
       "name" : "gl_mat",
+    },
+    "entropy" :
+    {
+      "mem": "8G",
+      "p" : "bigmemm",
+      "time" : "30-00:00",
+      "name" : "entropy",
     }
 }

@@ -4,7 +4,7 @@
 ## Sep 2019 -- vshastry
 ## Downloaded 4/28/22 by Alyssa Phillips
 
-library(rhdf5, lib.loc = "R_libs")
+library(rhdf5)
 
 args<-commandArgs(TRUE)
 

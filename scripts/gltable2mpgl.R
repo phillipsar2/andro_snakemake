@@ -1,4 +1,4 @@
-### Title: GL matrix to mpgl format
+### Title: PL table to mpgl format
 ### Author: Alyssa Phillips
 ### Date: 3/16/22
 
@@ -7,16 +7,16 @@ library(MASS)
 library("argparser", lib.loc = "R_libs")
 
 ap <- arg_parser("Generate ENTROPY input files from GL matrix")
- 
-ap <- add_argument(ap, "--gl", help = "input GL matrix")
+
+ap <- add_argument(ap, "--pl", help = "input PL table output from GATK")
 ap <- add_argument(ap, "--out", help = "output prefix")
- 
+
 argv <- parse_args(ap)
 
-#gl_file <- as.character("~/Andropogon/EBG/10k_lowcov-GL.txt")
-gl_file <- as.character(argv$gl)
+# gl_file <- as.character("~/Andropogon/reports/filtering/all.AG.highcov.scaffold_32.PL.txt")
+gl_file <- as.character(argv$pl)
 
-#fname <- strsplit(gl_file, "-GL.txt")[[1]]
+# fname <- strsplit(gl_file, ".PL.txt")[[1]]
 fname <- as.character(argv$out)
 
 # (1) EBG PL to MPGL format -----------------------------------------------
@@ -24,27 +24,49 @@ fname <- as.character(argv$out)
 print("Creating input genotype likelihood data for entropy...")
 
 ## >>  Read in GL file ----
-gl_tab <- read.csv(gl_file, sep = " ", header = T)
+gl_tab <- read.table(gl_file, header = T)
+
+# >> Drop 9x sample ----
+# 9x sample: INDE_PCRfree_Loretta_SAL-5_6_GCACGGAC_Andropogon_gerardii 
+gl_sub <- subset(gl_tab, select = -INDE_PCRfree_Loretta_SAL.5_6_GCACGGAC_Andropogon_gerardii.PL)
 
 # convert to matrix
 #gl_mat <- unname(as.matrix(gl_tab[2:dim(gl_tab)[1], 2:dim(gl_tab)[2]]))
-gl_mat <- unname(as.matrix(gl_tab))
+gl_mat <- unname(as.matrix(gl_sub[, 3:dim(gl_sub)[2]]))
 
 # >> Split PLs by comma ----
-gl <- apply(gl_mat, 1:2, function(x){ as.numeric( unlist( strsplit(x, split = ",") ) ) })
+# gl <- apply(gl_mat, 1:2, function(x){ as.numeric( unlist( strsplit(x, split = ",") ) ) })
+
+ngls <- 3*dim(gl_mat)[2]
+nsnp <- dim(gl_mat)[1]
+
+gl <- matrix(NA, nrow = nsnp, ncol = ngls)
+
+j = 1
+k = 3
+for (i in 1:dim(gl_mat)[2]){
+  gl[ ,j:k] <- do.call(rbind, strsplit(gl_mat[ ,i], split = ",", fixed = TRUE))
+  j = j + 3
+  k = k + 3
+}
+
 
 # collapse 3-dim array to 2-dim matrix
-# gl_collapse <- matrix(gl, ncol = prod(dim(gl)[1:2]), nrow = dim(gl)[2])
+# gl_collapse <- matrix(gl, ncol = prod(dim(gl)[1:2]), nrow = dim(gl)[3])
 # dim(gl_collapse)
+# gl_collapse[1:3,1:3]
+# dim(gl) <- c(prod(dim(gl)[1:2]), dim(gl)[3])
+
 
 # >> Prep metatdata ----
 nind <- dim(gl_mat)[2]
 nloci <- dim(gl_mat)[1]
 
-# genos <- gl_tab[1,1:dim(gl_mat)[2]]
-genos <- colnames(gl_tab)
-# pos <- gl_tab[2:dim(gl_mat)[1],1]
-pos <- rownames(gl_tab)
+genos <- colnames(gl_tab)[3:dim(gl_tab)[2]]
+pos <- str_c(gl_tab$CHROM, "_", gl_tab$POS)
+# pos <- rownames(gl_tab)
+
+
 
 # >> Output mpgl ----
 unlink(paste0(fname, ".mpgl")) # deletes the file with this name
@@ -52,15 +74,17 @@ cat(paste(nind, nloci, "\n"), file=paste0(fname, ".mpgl")) # print the nind and 
 cat(paste((genos)), file=paste0(fname, ".mpgl"), append=T) # print genotype names in  line 2
 for(locus in 1:nloci){
   cat(paste0("\n",pos[locus]," "), file=paste0(fname, ".mpgl"), append=T) # print locus name on line
-  # write.table(gl_collapse[locus,], file=paste0(fname, ".mpgl"), append=T, # write output table
-  #             col.names=F, row.names=F, eol=" ") # write gl values on same line
-  write.table(unlist(gl[locus,]), file=paste0(fname, ".mpgl"), append=T, # write output table
-              col.names=F, row.names=F, eol=" ") # write gl values on same line
+  write.table(gl[locus,], file=paste0(fname, ".mpgl"), append=T, # write output table
+              col.names=F, row.names=F, eol=" ", quote = F) # write gl values on same line
+  # write.table(unlist(gl[locus,]), file=paste0(fname, ".mpgl"), append=T, # write output table
+              # col.names=F, row.names=F, eol=" ", quote = F) # write gl values on same line
 }
 
 # >> Output ploidy input file ----
-ploidy_mat <- apply(gl, c(1,2), function(x){ length( unlist(x) ) - 1 })
+ploidy_mat <- apply(gl_mat, c(1,2), function(x){ length(unlist(str_split(x, pattern = ","))) - 1 })
 tploidy_mat <- t(ploidy_mat) # flip to have individuals as rows and loci as columns
+
+length(unlist(str_split(gl_mat[1,1], pattern = ",")))
 
 write.table(ploidy_mat, file = paste0(fname, ".ploidy_inds.txt"), row.names=F, col.names=F, sep=" ")
 
@@ -77,9 +101,10 @@ mean_gl <- matrix(0, nrow = nloci, ncol = nind)
 
 for (i in 1:nloci){
   for (j in 1:nind){
-    temp <- sum(10^(-0.1 * unlist(gl[i,j])))
-    p <- length(unlist(gl[i,j])) - 1
-    mean_gl[i,j] <- sum(( 10^(-0.1 * unlist(gl[i,j])) ) * (0:p)) / temp
+    g <- as.numeric(unlist(str_split(gl_mat[i,j], pattern = ",")))
+    temp <- sum(10^(-0.1 * g))
+    p <- length(g) - 1
+    mean_gl[i,j] <- sum(( 10^(-0.1 * g) ) * (0:p)) / temp
   }
 }
 
