@@ -1,3 +1,36 @@
+###
+### Troubleshooting batch effect
+###
+
+# (1) evaluate quality of raw reads with fastqc
+# scripts/fastqc.sh
+
+# (2) Trim reads sequenced at UCD with fastp
+# Minimum length is 36 (-l 36)
+# Don't filter for quality (-Q)
+# Adapter trimming is enabled by default -- don't need to specify adapter seq
+# Default detects and trims polyG tails for NovaSeq data
+# Trim first 9 bp on each read (--trim_front1 9 --trim_front2 9)
+
+rule fastp_trim:
+    input:
+        r1 = "/group/jrigrp10/andropogon_shortreads/ucd_seq/{sample}_R1_001.fastq.gz",
+        r2 = "/group/jrigrp10/andropogon_shortreads/ucd_seq/{sample}_R2_001.fastq.gz"
+    output:
+        p1 = "data/raw/trimmed/{sample}.trim_1.fastq.gz",
+        p2 = "data/raw/trimmed/{sample}.trim_2.fastq.gz",
+        r = "reports/fastp/{sample}.json"
+    run:
+        shell("fastp -w 2 \
+        -l 36 -Q \
+        -i {input.r1} -I {input.r2} \
+        -o {output.p1} -O {output.p2} \
+        --trim_front1 9 --trim_front2 9 \
+        -j {output.r}")
+
+
+#### #### ####
+
 # Align reads to the reference genome
 # bwa-mem2/2.2.1_x64-linux
 rule bwa_map:

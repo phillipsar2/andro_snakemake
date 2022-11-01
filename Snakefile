@@ -13,7 +13,7 @@ SAMPLE = glob_wildcards("/group/jrigrp10/andropogon_shortreads/ucd_seq/{sample}_
 BAM = glob_wildcards("data/final_bams/highcov/{bam}.dedup.bam").bam
 #print(BAM)
 
-# MERGE contains a list of the bams that belong to each genotype (GENO)  so they can be merged
+# MERGE contains a list of the bams that belong to each genotype (GENO) so they can be merged
 file = pd.read_csv("bams_to_merge.tsv", sep = "\t", header = 0)
 MERGE_A = list(file.Merge_A)
 MERGE_B = list(file.Merge_B)
@@ -21,6 +21,9 @@ GENO = list(file.Genotype)
 
 # HIGH contains the bams to be subsampled to low coverage
 HIGH = glob_wildcards("data/interm/mark_dups/IN{high}.dedup.bam").high
+
+# LOW_SUB contains the lowcov processed bams that need to be subsampled to even lower coverage
+
 
 # filep contains the bams nQuire was run on to determine ploidy
 filep = pd.read_csv("bams_nquire.csv", sep = "\t", header = None)
@@ -39,7 +42,6 @@ CHROM = ["Chr01A","Chr01B","Chr01C","Chr02A","Chr02B","Chr02C","Chr03A","Chr03B"
 ## high cov scaffolds w sites not filtered out (some lost entirely)
 #CHROM =  ["Chr01A", "Chr01B", "Chr01C", "Chr02A", "Chr02C", "Chr02B", "Chr03A", "Chr03B", "Chr03C", "Chr04A", "Chr04B", "Chr04C", "Chr05A", "Chr05B", "Chr05C", "Chr06A", "Chr06B", "Chr06C", "Chr07A", "Chr07B", "Chr07C", "Chr08A", "Chr08B", "Chr08C", "Chr09A", "Chr09B", "Chr09C", "Chr10A", "Chr10B", "Chr10C", "scaffold_144", "scaffold_163", "scaffold_263", "scaffold_32", "scaffold_490", "scaffold_542", "scaffold_590", "scaffold_64", "scaffold_965"]
 #print(CHROM)
-
 
 # Select working with high or low coverge samples for SNP calling 
 # options = ["highcov", "lowcov"]
@@ -62,6 +64,8 @@ CHAIN = ["1"]
 # Rule all describes the final output of the pipeline
 rule all:
     input:
+        ## Trimming raw reads
+         expand("reports/fastp/{sample}.json", sample = SAMPLE)
         ## Aligning reads
 #        expand("data/interm/mark_dups/{sample}.dedup.bam", sample = SAMPLE),
 #        expand("reports/bamqc/{bam}_stats/qualimapReport.html", bam = BAM),
@@ -95,7 +99,7 @@ rule all:
 #        ebg = expand("data/ebg/lowcov/{chr}.{ploidy}-PL.txt", chr = CHROM, ploidy = CYT),
 #        gl_mat = expand("data/ebg/lowcov/{chr}-GL.txt", chr = CHROM),
 #        rand_snps = "data/ebg/lowcov/10k_lowcov-GL.txt"
-        filt_miss = expand("data/ebg/lowcov/genoliks/{chr}.miss20-GL.txt", chr = CHROM)
+#        filt_miss = expand("data/ebg/lowcov/genoliks/{chr}.miss20-GL.txt", chr = CHROM)
         ## ENTROPY
 #         ent_in = "data/entropy/lowcov/10k_lowcov.miss5.mpgl",
 #        ent_in_tab = "data/entropy/highov/10k_highcov.mpgl"
@@ -107,10 +111,10 @@ rule all:
 
 
 ## Rules
-#include: "rules/mapping.smk"
+include: "rules/mapping.smk"
 #include: "rules/process_bam.smk"
 #include: "rules/determine_ploidy.smk"
 #include: "rules/calling.smk"
 #include: "rules/filtering.smk"
-include: "rules/gl_calling.smk"
+#include: "rules/gl_calling.smk"
 #include: "rules/pop_struc.smk"
