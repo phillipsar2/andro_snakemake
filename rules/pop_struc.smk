@@ -124,10 +124,87 @@ rule angsd_pca:
 
 # (5) Plot in R
 
-### PCA on low coverage dataset
+###
+### PCA on low coverage dataset - single read sampling approach
+###
 
-# (1) grab 10k random SNPs
-# grab every 9th row
-# awk 'NR % 9 == 0' all.lowcov.miss5-GL.txt >> 10k.lowcov.miss5-GL.txt
+# (1) Create the sites files
+rule create_sites:
+    input:
+        sites = "data/ebg/lowcov/genoliks/lowcov.merged.miss20.20k.positions",
+        vcf = "data/processed/filtered_snps_bpres/lowcov/all.AG.lowcov.merged.filtered.99.20.snps.vcf.gz"
+        # Sites with a depth cutoff of 99% percentile and 20% missing data
+#        sites = "reports/filtering/depth/lowcov/all.AG.lowcov.{chrom}.filtered.nocall.0.99_0.2.txt",
+#        vcf = "data/processed/filtered_snps_bpres/lowcov/all.AG.lowcov.{chrom}.filtered.99.20.snps.vcf.gz"
+    output:
+#        sites = "data/angsd/lowcov/lowcov.merged.miss20.20k.positions"
+        sites = "data/angsd/lowcov/lowcov.{chrom}.miss20.positions"
+    shell:
+        """
+        bcftools query -R {input.sites} -f '%CHROM\t%POS\t%REF\t%ALT{{0}}\n' {input.vcf} > {output.sites}
+        """
 
-# (2) Calculate allele frequencies and run PCA (see R script)
+# (2) Randomly subsample sites sites to 50k sites for the PCA
+# shuf -n 50000 data/angsd/lowcov/lowcov.all.miss20.positions >> data/angsd/lowcov/lowcov.all.miss20.50k.positions
+
+# (3) Run the PCA
+# -GL 1 calcualtes GLs using GATK method - only calling them so a reference allele can be established for -doMajorMinor
+# -doIBS 1 prints a randomly sampled read from each individual at each position
+# -doCov 1 prints out the covariance matrix which can be used for a PCA
+# -minMaf 0.05 excludes sites with a minor allele freq less the 0.05
+# -doMajorMinor 4 specifies the Major allele to be the reference allele specified by -ref
+
+rule PCA_single:
+    input:
+        ref = config.ref,
+        # All Andro
+#        bamlist = "data/final_bams/lowcov/all.bamlist"
+        # Common garden
+        bamlist = "data/final_bams/lowcov/commongarden.bamlist", 
+        #  50k random sites, 20% missing data
+        sites = "data/angsd/lowcov/lowcov.all.miss20.50k.positions.sorted"
+    output:
+#        "data/pca/lowcov/all.andro.lowcov.50k.ibs.gz"
+        "data/pca/lowcov/cg.andro.lowcov.50k.ibs.gz"
+    params:
+#        prefix = "data/pca/lowcov/all.andro.lowcov.50k"
+        prefix = "data/pca/lowcov/cg.lowcov.50k"
+    run:
+        shell("angsd \
+        -sites {input.sites} \
+        -bam {input.bamlist} \
+        -doMajorMinor 3 \
+        -doCounts 1 \
+        -ref {input.ref} \
+        -doCov 1 \
+        -doIBS 1 \
+        -out {params.prefix}")
+
+# (4) Plot in R
+
+
+
+###
+### Kinship matrix for low coverage common garden ind
+###
+
+# (1) extract single reads positions that have all individuals present (no missing data)
+rule cg_ibs:
+    input:
+        ref = config.ref,
+        bamlist = "data/final_bams/lowcov/commongarden.bamlist",
+        sites = "reports/filtering/depth/lowcov/all.AG.lowcov.positions.filtered.nocall.0.99_20per.txt"
+    output:
+        "data/pca/lowcov/cg.andro.lowcov.nomiss.ibs.gz"
+    params:
+        prefix = "data/pca/lowcov/cg.lowcov.nomiss"
+    run:
+        shell("angsd \
+        -sites {input.sites} \
+        -bam {input.bamlist} \
+        -minInd 79 \
+        -doMajorMinor 3 \
+        -doCounts 1 \
+        -ref {input.ref} \
+        -doIBS 1 \
+        -out {params.prefix}")

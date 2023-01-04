@@ -99,13 +99,15 @@ rule filter_depth:
         vcf = "reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.table"
     output:
 #        "reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.0.99_0.2.txt"
-        "reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.0.99_0.2_8.txt"
+#        "reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.0.99_0.2_8.txt"
+         "reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.0.99_0_1.txt"
     params:
 #        p = "{p}",
 #        miss = "{miss}"
         p = "0.99",
-        miss = "0.2",
-        min = "8"
+        miss = "0",
+#        miss = "0.2",
+        min = "1"
     shell:
         "Rscript scripts/genoDPfilter.R {input.vcf} -q {params.p} -m {params.miss} --min {params.min}"
 

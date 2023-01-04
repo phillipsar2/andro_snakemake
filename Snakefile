@@ -8,9 +8,9 @@ SAMPLE = glob_wildcards("/group/jrigrp10/andropogon_shortreads/ucd_seq/{sample}_
 #print(SAMPLE)
 
 # BAM names encompass all samples regardless of their fastq pattern
-#BAM = glob_wildcards("data/interm/mark_dups/{bam}.dedup.bam").bam
+BAM = glob_wildcards("data/interm/mark_dups/{bam}.dedup.bam").bam
 #BAM = glob_wildcards("data/final_bams/lowcov/{bam}.dedup.bam").bam
-BAM = glob_wildcards("data/final_bams/highcov/{bam}.dedup.bam").bam
+#BAM = glob_wildcards("data/final_bams/highcov/{bam}.dedup.bam").bam
 #print(BAM)
 
 # MERGE contains a list of the bams that belong to each genotype (GENO) so they can be merged
@@ -65,7 +65,7 @@ CHAIN = ["1"]
 rule all:
     input:
         ## Trimming raw reads
-         expand("reports/fastp/{sample}.json", sample = SAMPLE)
+#         expand("reports/fastp/{sample}.json", sample = SAMPLE)
         ## Aligning reads
 #        expand("data/interm/mark_dups/{sample}.dedup.bam", sample = SAMPLE),
 #        expand("reports/bamqc/{bam}_stats/qualimapReport.html", bam = BAM),
@@ -91,6 +91,7 @@ rule all:
 #        dp_diag = expand("reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.table", chr = CHROM, cov = COV),
 #        dp_miss = expand("reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.0.99_0.2.txt", p = p, miss = miss, chr = CHROM, cov = COV)
 #        dp_miss = expand("reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.0.99_0.2_8.txt", chr = CHROM, cov = COV),
+         dp_miss = expand("reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.0.99_0_1.txt", chr = CHROM, cov = COV),
 #        grab_snps = expand("data/processed/filtered_snps_bpres/{cov}/all.AG.{cov}.{chr}.filtered.{p}.{miss}.snps.vcf.gz", cov = COV, p = p, miss = miss, chr = CHROM),
 #        grab_gl = expand("data/processed/filtered_snps_bpres/{cov}/all.AG.{cov}.{chr}.PL.txt", cov = COV, chr = CHROM)
         ## EBG
@@ -105,16 +106,22 @@ rule all:
 #        ent_in_tab = "data/entropy/highov/10k_highcov.mpgl"
 #        entropy = expand("data/entropy/{cov}/10k_{cov}.{k}.{chain}.hdf5", cov = COV, k = K, chain = CHAIN)
 #        ent_out = expand("data/entropy/{cov}/qest.k{k}.c{chain}.txt", cov = COV, k = K, chain = CHAIN)
-        ## ANGSD - highcov only
+        ## High cov PCA
 #        pca =  expand("data/angsd/pca/highcov.{chrom}.8dp70.beagle.gz", chrom = CHROM)
 #        pcaangsd = "data/angsd/pca/highcov.merged.8dp70.cov"
-
+        ## Low cov PCA
+#        get_sites = expand("data/angsd/lowcov/lowcov.{chrom}.miss20.positions", chrom = CHROM)
+#        all_single = "data/angsd/lowcov/all.andro.lowcov.all.positions.ibs.gz",
+#        pca_single = "data/pca/lowcov/all.andro.lowcov.50k.ibs.gz"
+#        pca_single = "data/pca/lowcov/cg.andro.lowcov.50k.ibs.gz"
+        ## Kinship matrix
+         cg_ibs = "data/pca/lowcov/cg.andro.lowcov.nomiss.ibs.gz"
 
 ## Rules
-include: "rules/mapping.smk"
+#include: "rules/mapping.smk"
 #include: "rules/process_bam.smk"
 #include: "rules/determine_ploidy.smk"
 #include: "rules/calling.smk"
 #include: "rules/filtering.smk"
 #include: "rules/gl_calling.smk"
-#include: "rules/pop_struc.smk"
+include: "rules/pop_struc.smk"

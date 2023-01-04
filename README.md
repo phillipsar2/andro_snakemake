@@ -22,22 +22,50 @@ Instead, I plotted the normalized values and colored the points but known/unknow
 Scripts are local in ~/Andropogon/nQuire. Ploidy was identified for 16 of 17 unknown individuals.
 - If genome size could not be determined or inferred for an individual, the bam was moved to the folder data/interm/unknown-ploidy
 
-#4 SNP calling
-- Genotypes are called with bcftools mpileup & bcftools call for 2 sets of individuals: all high coverage (JGI) and all low coverage (subsampled JGI, PanAnd, & UCD)
-
-#5 SNP filtering
-- SNPs are extracted using GATK. VCFs are converted to table format with GATK to examine quality distributions and set hard filtering cutoffs.
-	-- Low coverage SNPs (unfiltered): 463,763,393
+#4 Identify good sites in SNP filtering
+- Genotypes are called with bcftools mpileup & bcftools call for 2 sets of individuals: all high coverage (JGI) and all low covera$
+- SNPs are extracted using GATK. VCFs are converted to table format with GATK to examine quality distributions and set hard filter$
+        -- Low coverage SNPs (unfiltered): 463,763,393
         -- High coverage SNPs (unfiltered): 480,857,741
 - SNPs are hard filtered using GATK.
-	-- Lowcov: QUAL >= 30, MQ >= 30, biallelic 
-	-- Highcov: QUAL >= 30, MQ >= 30, biallelic
+        -- Lowcov: QUAL >= 30, MQ >= 30, biallelic
+        -- Highcov: QUAL >= 30, MQ >= 30, biallelic
 - SNPs are filtered for genotype depth and missingness using a custom script (filter written by Mitra Melon)
-	-- Lowcov: min = 1, max = qpois(p = 0.99), < 20% missing data
-	-- Highcov: min = 8, max = qpois(p = 0.99), < 20% missing data
+        -- Lowcov: min = 1, max = qpois(p = 0.99), < 20% missing data
+        -- Highcov: min = 8, max = qpois(p = 0.99), < 20% missing data
 - Final filtered SNP counts:
-	-- Lowcov: 11,707,655
-	-- Highcov: 102,242,020
+        -- Lowcov: 11,707,655
+        -- Highcov: 102,242,020
+
+#5 Single-read genotypes (low-coverage only)
+- Single-read genotypes were extracted using ANGSD for all 11,707,655 positions
+- 50k SNPs were randomly selected using shuf
+
+#6 PCA
+High cov SNPs:
+- ANGSD was utilized to estimate GLs and then run a PCA (PCangsd) as all individuals are 6x
+- Genotype likelihoods were estimated directly from the BAMs using the Samtools method (-GL 1) assuming the reference allele is th$
+- Reads with multiple best hits (-uniqueOnly 1) and flags above 255 ( -remove_bads 1) were removed and only proper pairs were incl$
+- Sites with a mapping quality below 30 (-minMapQ 30), a minimum base quality score of 30 (-minQ 30), \
+and a total sequencing depth below 8 and above 70 (-doCounts 1 -setMinDepthInd 8 -setMaxDepthInd 70) were dropped. The maximum num$
+- Genotype likelihoods were output as a beagle file (-doGlf 2).
+- 30K sites were randomly grabbed from the beagle file using shuf.
+- The PCA was ran with PCangsd using default settings. The PCA was plotted in R with ggplot2.
+
+Low cov SNPs:
+- The 50k SNPs with single-read genotypes were used to run a PCA in ANGSD. Single-read gentoypes are ploidy-neutral.
+	-- PCA was also run with 20k random SNPs.
+	-- I should run multiple iterations of the 50k SNPs PCA
+- Results of the PCA were plotted with a custom script in R.
+
+#7 Kinship matrix
+- The same 50k SNPs used for the PCA were used to generate a kinship matrix. Only the individuals found in the common 
+garden were used to calculate the kinship matrix.
+
+
+
+# --------
+
 
 #6 Estimating genotype probabilities
 Low coverage SNPs:
