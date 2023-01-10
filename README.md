@@ -59,10 +59,11 @@ Low cov SNPs:
 - Results of the PCA were plotted with a custom script in R.
 
 #7 Kinship matrix
-- The same 50k SNPs used for the PCA were used to generate a kinship matrix. Only the individuals found in the common 
-garden were used to calculate the kinship matrix.
-
-
+- Kinship matrix requires sites without any missing data. Sites without any missing data for the common garden individuals \
+were extracted with ANGSD. The input was all of the sites with 20% or less missing data and these sites were further subsetted by \
+requiring sites have data for all 79 individuals (-minInd 79). A single read was randomly selected for each site (`-doIBS`).
+- The single-read genotypes were used to estimate the kinshp matrix in a custom script (`kinship_matrix.R`)
+- Number of SNPs used to generate kinship matrix: 28,633
 
 # --------
 

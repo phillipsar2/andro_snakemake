@@ -189,15 +189,16 @@ rule PCA_single:
 ###
 
 # (1) extract single reads positions that have all individuals present (no missing data)
+# sites file must contain the major and minor (ref and alt) allele
 rule cg_ibs:
     input:
         ref = config.ref,
         bamlist = "data/final_bams/lowcov/commongarden.bamlist",
-        sites = "reports/filtering/depth/lowcov/all.AG.lowcov.positions.filtered.nocall.0.99_20per.txt"
+        sites = "data/angsd/lowcov/lowcov.all.miss20.positions"
     output:
         "data/pca/lowcov/cg.andro.lowcov.nomiss.ibs.gz"
     params:
-        prefix = "data/pca/lowcov/cg.lowcov.nomiss"
+        prefix = "data/pca/lowcov/cg.andro.lowcov.nomiss"
     run:
         shell("angsd \
         -sites {input.sites} \
@@ -208,3 +209,22 @@ rule cg_ibs:
         -ref {input.ref} \
         -doIBS 1 \
         -out {params.prefix}")
+
+
+###
+### Treemix
+###
+
+# (1) generate input file
+# treemix_input.R
+
+# (2) Run treemix
+rule treemix:
+    input:
+        "data/treemix/all.andro.lowcov.treemix.txt.gz"
+    output:
+        "data/treemix/all.andro.lowcov.cov.gz"
+    params:
+        prefix = "data/treemix/all.andro.lowcov"
+    run:
+        shell("~/toolsfordayz/treemix-1.13/src/treemix -i {input} -o {params.prefix}")
