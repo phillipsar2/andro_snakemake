@@ -56,10 +56,13 @@ miss = ["20"]
 CYT = ["6x"]
 
 # number of admixture groups (k) - for 14 groups do range(15))
-K = list(range(2,15))
+K = list(range(2,14))
 
 # which chain are we currently running for entropy?
 CHAIN = ["1"]
+
+# which run are we currently sampling for single read genotyping?
+RUN = ["1","2"]
 
 # Rule all describes the final output of the pipeline
 rule all:
@@ -91,7 +94,7 @@ rule all:
 #        dp_diag = expand("reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.table", chr = CHROM, cov = COV),
 #        dp_miss = expand("reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.0.99_0.2.txt", p = p, miss = miss, chr = CHROM, cov = COV)
 #        dp_miss = expand("reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.0.99_0.2_8.txt", chr = CHROM, cov = COV),
-         dp_miss = expand("reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.0.99_0_1.txt", chr = CHROM, cov = COV),
+#         dp_miss = expand("reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.0.99_0_1.txt", chr = CHROM, cov = COV),
 #        grab_snps = expand("data/processed/filtered_snps_bpres/{cov}/all.AG.{cov}.{chr}.filtered.{p}.{miss}.snps.vcf.gz", cov = COV, p = p, miss = miss, chr = CHROM),
 #        grab_gl = expand("data/processed/filtered_snps_bpres/{cov}/all.AG.{cov}.{chr}.PL.txt", cov = COV, chr = CHROM)
         ## EBG
@@ -115,7 +118,11 @@ rule all:
 #        pca_single = "data/pca/lowcov/all.andro.lowcov.50k.ibs.gz"
 #        pca_single = "data/pca/lowcov/cg.andro.lowcov.50k.ibs.gz"
         ## Kinship matrix
-         cg_ibs = "data/pca/lowcov/cg.andro.lowcov.nomiss.ibs.gz"
+#         cg_ibs = "data/pca/lowcov/cg.andro.lowcov.nomiss.ibs.gz"
+#         all_ibs = "data/pca/lowcov/all.andro.lowcov.all.miss20.ibs.gz"
+         kin_diag = expand("data/kinship/lowcov/all.andro.lowcov.all.miss20.min2.run{run}.ibs.gz", run = RUN)
+        ## STRUCTURE
+#         structure = expand("cg.lowcov.50k.k{k}.run{run}.structure_output.txt", run = RUN, k = K)
 
 ## Rules
 #include: "rules/mapping.smk"

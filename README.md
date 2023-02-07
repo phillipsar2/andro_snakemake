@@ -44,11 +44,11 @@ Scripts are local in ~/Andropogon/nQuire. Ploidy was identified for 16 of 17 unk
 #6 PCA
 High cov SNPs:
 - ANGSD was utilized to estimate GLs and then run a PCA (PCangsd) as all individuals are 6x
-- Genotype likelihoods were estimated directly from the BAMs using the Samtools method (-GL 1) assuming the reference allele is th$
-- Reads with multiple best hits (-uniqueOnly 1) and flags above 255 ( -remove_bads 1) were removed and only proper pairs were incl$
-- Sites with a mapping quality below 30 (-minMapQ 30), a minimum base quality score of 30 (-minQ 30), \
-and a total sequencing depth below 8 and above 70 (-doCounts 1 -setMinDepthInd 8 -setMaxDepthInd 70) were dropped. The maximum num$
-- Genotype likelihoods were output as a beagle file (-doGlf 2).
+- Genotype likelihoods were estimated directly from the BAMs using the Samtools method (`-GL 1`) assuming the reference allele is the major allele.
+- Reads with multiple best hits (`-uniqueOnly 1`) and flags above 255 (`-remove_bads 1`) were removed and only proper pairs were included.
+- Sites with a mapping quality below 30 (`-minMapQ 30`), a minimum base quality score of 30 (`-minQ 30`), \
+and a total sequencing depth below 8 and above 70 (`-doCounts 1 -setMinDepthInd 8 -setMaxDepthInd 70`) were dropped. 
+- Genotype likelihoods were output as a beagle file (`-doGlf 2`).
 - 30K sites were randomly grabbed from the beagle file using shuf.
 - The PCA was ran with PCangsd using default settings. The PCA was plotted in R with ggplot2.
 
@@ -57,13 +57,19 @@ Low cov SNPs:
 	-- PCA was also run with 20k random SNPs.
 	-- I should run multiple iterations of the 50k SNPs PCA
 - Results of the PCA were plotted with a custom script in R.
+- Seperate PCAs were ran for the CG and All Andropogon
 
 #7 Kinship matrix
-- Kinship matrix requires sites without any missing data. Sites without any missing data for the common garden individuals \
-were extracted with ANGSD. The input was all of the sites with 20% or less missing data and these sites were further subsetted by \
-requiring sites have data for all 79 individuals (-minInd 79). A single read was randomly selected for each site (`-doIBS`).
+- A single read was randomly sampled (`-doIBS`) for each sites with < 20% missing data. Then, 50k (CG) or 100k (All Andro) random SNPs were \
+selected for the kinship matrix.
 - The single-read genotypes were used to estimate the kinshp matrix in a custom script (`kinship_matrix.R`)
-- Number of SNPs used to generate kinship matrix: 28,633
+- To estimate the diagonal of the kinship matrix (aka inbreeding), only sites with genotype depth > 2 were included. A single read was sampled\
+twice at each site and both draws were used to calculate inbreeding (the probability of sharing an allele IBD with yourself).
+
+# 8 STRUCTURE
+Common garden individuals:
+- 50k random snps with < 20% missing data were used for STRUCTURE
+
 
 # --------
 
@@ -74,12 +80,6 @@ Low coverage SNPs:
 - Using a custom R script that utilizes vcfR (scripts/vcf2ADmatrix.R), I extracted the matrices for total read count and alternate read count
 - I ran EBG independently on each ploidy to calculate phred-scaled genotype probabilites (1000 interactions; error = 0.01)
 - The phred-scaled genotype likelihood EBG output was converted to a matrix and the files for each ploidy were combined using a custom script (scripts/ebg2glmatrix_2ploidy.R)
-
-
-#7 ENTROPY
-Low cov SNPs:
-- 10k random SNPs were selected and the subsequent GL matrix was converted to mpgl format using a custom script (scripts/glmat2mpgl.R)
-- ENTROPY was run with default burn-in and MCMC steps. Every 5th step was recorded after burn-in (-t 5) and ENTROPY was run for k=c(2:14)
 
 
 #8 PCA
@@ -100,3 +100,9 @@ Low cov SNPs:
 - Allele frequencies were standardized seperately for each ploidy using a Patterson's standardization.\
  This standardization method properly accounts for the difference in variation between the two cytotypes.
 - A PCA was ran in R using 'prcomp' on the standardized allele frequencies. Results were plotted with ggplot2.
+
+
+####
+# Analyses that were unsuccessful
+* ENTROPY
+* Treemix

@@ -210,15 +210,85 @@ rule cg_ibs:
         -doIBS 1 \
         -out {params.prefix}")
 
+###
+### Kinship matrix for all low coverage
+###
+
+###
+### Kinship matrix - All Andropogon, low coverage 
+###
+
+# (1) Grab a random read at filtered sites with less than 20% missing data for all individuals
+rule all_ibs:
+    input:
+        ref = config.ref,
+        # All Andro
+        bamlist = "data/final_bams/lowcov/all.bamlist",
+        # all sites with less than 20% missing data
+        sites = "data/angsd/lowcov/lowcov.all.miss20.positions"
+    output:
+        "data/pca/lowcov/all.andro.lowcov.all.miss20.ibs.gz"
+    params:
+        prefix = "data/pca/lowcov/all.andro.lowcov.all.miss20"
+    run:
+        shell("angsd \
+        -sites {input.sites} \
+        -bam {input.bamlist} \
+        -doMajorMinor 3 \
+        -doCounts 1 \
+        -ref {input.ref} \
+        -doIBS 1 \
+        -out {params.prefix}")
+
+# (2) Grab a random read at same sites as step (1) but also require depth > 2
+## This needs to be run twice to calculate the diagonal of the kinship matrix
+rule kin_diag:
+    input:
+        ref = config.ref,
+        # All Andro
+        bamlist = "data/final_bams/lowcov/all.bamlist",
+        # all sites with less than 20% missing data
+        sites = "data/angsd/lowcov/lowcov.all.miss20.positions"
+    output:
+        "data/kinship/lowcov/all.andro.lowcov.all.miss20.min2.run{run}.ibs.gz"
+    params:
+        prefix = "data/kinship/lowcov/all.andro.lowcov.all.miss20.min2.run{run}"
+    run:
+        shell("angsd \
+        -sites {input.sites} \
+        -bam {input.bamlist} \
+        -setMinDepthInd 2 \
+        -doMajorMinor 3 \
+        -doCounts 1 \
+        -ref {input.ref} \
+        -doIBS 1 \
+        -out {params.prefix}")
+
+###
+### STRUCTURE 
+###
+
+rule structure:
+    input:
+        sites = "data/structure/cg.lowcov.50k.structure_input.txt",
+        main = "mainparams",
+        extra = "extraparams"
+    output:
+        "cg.lowcov.50k.k{k}.run{run}.structure_output.txt"
+    params:
+        k = "{k}"
+    run:
+        #module load structure-console/2.3.4
+        shell("structure -m {input.main} -e {input.extra} -K {params.k} -i {input.sites} -o {output}")
 
 ###
 ### Treemix
 ###
 
-# (1) generate input file
+# (2) Convert to treemix format
 # treemix_input.R
 
-# (2) Run treemix
+# (3) Run treemix
 rule treemix:
     input:
         "data/treemix/all.andro.lowcov.treemix.txt.gz"
