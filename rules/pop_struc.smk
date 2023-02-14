@@ -1,3 +1,5 @@
+import random
+
 # Evaluating population structure with ENTROPY
 
 # (1a) Generate ENTROPY input files from gl matrix
@@ -250,19 +252,39 @@ rule kin_diag:
         # all sites with less than 20% missing data
         sites = "data/angsd/lowcov/lowcov.all.miss20.positions"
     output:
-        "data/kinship/lowcov/all.andro.lowcov.all.miss20.min2.run{run}.ibs.gz"
+        "data/kinship/lowcov/all.andro.lowcov.all.miss20.min6.run{run}.ibs.gz"
     params:
-        prefix = "data/kinship/lowcov/all.andro.lowcov.all.miss20.min2.run{run}"
+        prefix = "data/kinship/lowcov/all.andro.lowcov.all.miss20.min6.run{run}",
+        seed = random.randint(1,100)
     run:
         shell("angsd \
         -sites {input.sites} \
         -bam {input.bamlist} \
-        -setMinDepthInd 2 \
+        -setMinDepthInd 6 \
         -doMajorMinor 3 \
         -doCounts 1 \
         -ref {input.ref} \
         -doIBS 1 \
+        -seed {params.seed} \
         -out {params.prefix}")
+
+# (3) Calculate diagonal (inbreeding) with all sites
+rule inbred:
+   input:
+        "all.andro.lowcov.miss20.min2.100k.run2.ibs.txt"
+   output:
+        "all.andro.lowcov.miss20.inbreedingcoef.csv"
+   run:
+        import pandas as pd
+        import numpy as np
+        run2 = pd.read_table("all.andro.lowcov.miss20.min2.100k.run2.ibs.txt", header = None)
+        run1 = pd.read_table("all.andro.lowcov.miss20.min2.100k.run1.ibs.txt", header = None)
+        sum = run1 + run2
+        sum_mat = sum.iloc[:, 4:]
+        af = sum_mat / 2
+        af[af < 0] = np.nan
+        inbred = af.mean(axis = 0)
+        inbred.to_csv("all.andro.lowcov.miss20.inbreedingcoef.csv", index = False, header=False)
 
 ###
 ### STRUCTURE 
@@ -271,15 +293,16 @@ rule kin_diag:
 rule structure:
     input:
         sites = "data/structure/cg.lowcov.50k.structure_input.txt",
-        main = "mainparams",
-        extra = "extraparams"
+        main = "data/structure/mainparams",
+        extra = "data/structure/extraparams"
     output:
-        "cg.lowcov.50k.k{k}.run{run}.structure_output.txt"
+        "data/structure/cg.lowcov.50k.k{k}.run{run}.75steps.structure_output.txt_f"
     params:
-        k = "{k}"
+        k = "{k}",
+        out = "data/structure/cg.lowcov.50k.k{k}.run{run}.75steps.structure_output.txt"
     run:
         #module load structure-console/2.3.4
-        shell("structure -m {input.main} -e {input.extra} -K {params.k} -i {input.sites} -o {output}")
+        shell("structure -m {input.main} -e {input.extra} -K {params.k} -i {input.sites} -o {params.out}")
 
 ###
 ### Treemix
