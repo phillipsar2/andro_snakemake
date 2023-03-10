@@ -25,24 +25,24 @@ Scripts are local in `~/Andropogon/nQuire`. Ploidy was identified for 16 of 17 u
 #4 Identify good sites in SNP filtering
 - Genotypes are called with bcftools mpileup & bcftools call for 2 sets of individuals: all high coverage (JGI) and all low covera$
 - SNPs are extracted using GATK. VCFs are converted to table format with GATK to examine quality distributions and set hard filter$
-	-Low coverage SNPs (unfiltered): 463,763,393
-        - High coverage SNPs (unfiltered): 480,857,741
+    -Low coverage SNPs (unfiltered): 463,763,393
+    - High coverage SNPs (unfiltered): 480,857,741
 - SNPs are hard filtered using GATK.
-        - Lowcov: QUAL >= 30, MQ >= 30, biallelic
-        - Highcov: QUAL >= 30, MQ >= 30, biallelic
+    - Lowcov: QUAL >= 30, MQ >= 30, biallelic
+    - Highcov: QUAL >= 30, MQ >= 30, biallelic
 - SNPs are filtered for genotype depth and missingness using a custom script (filter written by Mitra Melon)
-        - Lowcov: min = 1, max = `qpois(p = 0.99)`, < 20% missing data
-        - Highcov: min = 8, max = `qpois(p = 0.99)`, < 20% missing data
+    - Lowcov: min = 1, max = `qpois(p = 0.99)`, < 20% missing data
+    - Highcov: min = 8, max = `qpois(p = 0.99)`, < 20% missing data
 - Final filtered SNP counts:
-        - Lowcov: 11,707,655
-        - Highcov: 102,242,020
+    - Lowcov: 11,707,655
+    - Highcov: 102,242,020
 
 #5 Single-read genotypes (low-coverage only)
 - Single-read genotypes were extracted using ANGSD for all 11,707,655 positions
 - 50k SNPs were randomly selected using shuf
 
 #6 PCA
-High cov SNPs:
+##High cov SNPs:
 - ANGSD was utilized to estimate GLs and then run a PCA (PCangsd) as all individuals are 6x
 - Genotype likelihoods were estimated directly from the BAMs using the Samtools method (`-GL 1`) assuming the reference allele is the major allele.
 - Reads with multiple best hits (`-uniqueOnly 1`) and flags above 255 (`-remove_bads 1`) were removed and only proper pairs were included.
@@ -52,10 +52,10 @@ and a total sequencing depth below 8 and above 70 (`-doCounts 1 -setMinDepthInd 
 - 30K sites were randomly grabbed from the beagle file using shuf.
 - The PCA was ran with PCangsd using default settings. The PCA was plotted in R with ggplot2.
 
-Low cov SNPs:
+##Low cov SNPs:
 - The 50k SNPs with single-read genotypes were used to run a PCA in ANGSD. Single-read gentoypes are ploidy-neutral.
-	-- PCA was also run with 20k random SNPs.
-	-- I should run multiple iterations of the 50k SNPs PCA
+    - PCA was also run with 20k random SNPs.
+    - I should run multiple iterations of the 50k SNPs PCA
 - Results of the PCA were plotted with a custom script in R.
 - Seperate PCAs were ran for the CG and All Andropogon
 
@@ -69,7 +69,7 @@ the reads twice, I randomly selected the same set of 100k sites from both runs. 
 probability of sharing an allele IBD with yourself.
 
 # 8 STRUCTURE
-Common garden individuals:
+##Common garden individuals:
 - 50k random snps with < 20% missing data were used for STRUCTURE
 
 
@@ -77,7 +77,7 @@ Common garden individuals:
 
 
 #6 Estimating genotype probabilities
-Low coverage SNPs:
+##Low coverage SNPs:
 - The vcfs are split by ploidy using bcftools view
 - Using a custom R script that utilizes vcfR (scripts/vcf2ADmatrix.R), I extracted the matrices for total read count and alternate read count
 - I ran EBG independently on each ploidy to calculate phred-scaled genotype probabilites (1000 interactions; error = 0.01)
@@ -85,7 +85,7 @@ Low coverage SNPs:
 
 
 #8 PCA
-High cov SNPs:
+##High cov SNPs:
 - ANGSD was utilized to estimate GLs and then run a PCA (PCangsd) as all individuals are 6x
 - Genotype likelihoods were estimated directly from the BAMs using the Samtools method (-GL 1) assuming the reference allele is the major allele (-doMajorMinor 4). 
 - Reads with multiple best hits (-uniqueOnly 1) and flags above 255 ( -remove_bads 1) were removed and only proper pairs were included (-only_proper_pairs 1).
@@ -95,7 +95,7 @@ and a total sequencing depth below 8 and above 70 (-doCounts 1 -setMinDepthInd 8
 - 30K sites were randomly grabbed from the beagle file using shuf.
 - The PCA was ran with PCangsd using default settings. The PCA was plotted in R with ggplot2.
 
-Low cov SNPs:
+##Low cov SNPs:
 - The GL table was filtered for X% missing data. This left a total of X SNPs.
 - 20K SNPs were randomly selected using 'shuf'.
 - Individual allele frequencies were calculated in R using a custom script. 
