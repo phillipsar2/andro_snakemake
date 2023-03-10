@@ -2,12 +2,12 @@
 
 A snakemake workflow for all of the things looking at origins of polyploidy.
 
-#1 Alignment
+## 1. Alignment
 - Short read data was verified as A. gerardi. Any data that had mixed identiy as a different species or identified entirely as another species was not alinged.
 - reads from different lanes were merged into a single file (JGI individuals)
 - pair-end reads were aligned with bwa-mem2/2.0
 
-#2 Post-alignment processing
+## 2. Post-alignment processing
 - BAMs were sorted, read groups were added, and duplicates were marked with GATK and samtools
 - Low-coverage (< 5X) BAMs from the same genotype were merged together (PanAnd & UCD) with samtools merge and read groups were re-added with gatk. Bams that were merged together were moved to the folder data/interm/raw-unmerged
 - Low quality individuals (< 0.5X) were removed from the low-coverage data set and moved into the data/interm/low-coverage folder
@@ -15,14 +15,14 @@ A snakemake workflow for all of the things looking at origins of polyploidy.
 - All remaining low-coverage bams (PanAnd & UCD) that were not discarded were moved to `data/final_bams/lowcov`
 - All remaining high-coverage bams (JGI) that were not discarded were moved to `data/final_bams/highcov`
 
-#3 Determine ploidy
+## 3. Determine ploidy
 - nQuire was utilized to determine ploidy for all high-coverage Andropogon individuals. \
 I attempted to cluster the normalized maximum log-likelihood with mclust5 in R but it identified 8 and 9 clusters. \
 Instead, I plotted the normalized values and colored the points but known/unknown ploidy to identify groups. \
 Scripts are local in `~/Andropogon/nQuire`. Ploidy was identified for 16 of 17 unknown individuals.
 - If genome size could not be determined or inferred for an individual, the bam was moved to the folder data/interm/unknown-ploidy
 
-#4 Identify good sites in SNP filtering
+## 4. Identify good sites in SNP filtering
 - Genotypes are called with bcftools mpileup & bcftools call for 2 sets of individuals: all high coverage (JGI) and all low covera$
 - SNPs are extracted using GATK. VCFs are converted to table format with GATK to examine quality distributions and set hard filter$
     -Low coverage SNPs (unfiltered): 463,763,393
@@ -37,12 +37,12 @@ Scripts are local in `~/Andropogon/nQuire`. Ploidy was identified for 16 of 17 u
     - Lowcov: 11,707,655
     - Highcov: 102,242,020
 
-#5 Single-read genotypes (low-coverage only)
+## 5. Single-read genotypes (low-coverage only)
 - Single-read genotypes were extracted using ANGSD for all 11,707,655 positions
 - 50k SNPs were randomly selected using shuf
 
-#6 PCA
-##High cov SNPs:
+## 6. PCA
+### High cov SNPs:
 - ANGSD was utilized to estimate GLs and then run a PCA (PCangsd) as all individuals are 6x
 - Genotype likelihoods were estimated directly from the BAMs using the Samtools method (`-GL 1`) assuming the reference allele is the major allele.
 - Reads with multiple best hits (`-uniqueOnly 1`) and flags above 255 (`-remove_bads 1`) were removed and only proper pairs were included.
@@ -52,14 +52,14 @@ and a total sequencing depth below 8 and above 70 (`-doCounts 1 -setMinDepthInd 
 - 30K sites were randomly grabbed from the beagle file using shuf.
 - The PCA was ran with PCangsd using default settings. The PCA was plotted in R with ggplot2.
 
-##Low cov SNPs:
+### Low cov SNPs:
 - The 50k SNPs with single-read genotypes were used to run a PCA in ANGSD. Single-read gentoypes are ploidy-neutral.
     - PCA was also run with 20k random SNPs.
     - I should run multiple iterations of the 50k SNPs PCA
 - Results of the PCA were plotted with a custom script in R.
 - Seperate PCAs were ran for the CG and All Andropogon
 
-#7 Kinship matrix
+## 7. Kinship matrix
 - A single read was randomly sampled (`-doIBS`) for each sites with < 20% missing data. Then, 50k (CG) or 100k (All Andro) random SNPs were \
 selected for the kinship matrix.
 - The single-read genotypes were used to estimate the kinshp matrix in a custom script (`kinship_matrix.R`)
@@ -68,8 +68,8 @@ twice at each site and both draws were used to calculate inbreeding (the probabi
 the reads twice, I randomly selected the same set of 100k sites from both runs. These 100k snps were used to calculate inbreeding as the \
 probability of sharing an allele IBD with yourself.
 
-# 8 STRUCTURE
-##Common garden individuals:
+## 8. STRUCTURE
+### Common garden individuals:
 - 50k random snps with < 20% missing data were used for STRUCTURE
 
 
