@@ -12,30 +12,30 @@ A snakemake workflow for all of the things looking at origins of polyploidy.
 - Low-coverage (< 5X) BAMs from the same genotype were merged together (PanAnd & UCD) with samtools merge and read groups were re-added with gatk. Bams that were merged together were moved to the folder data/interm/raw-unmerged
 - Low quality individuals (< 0.5X) were removed from the low-coverage data set and moved into the data/interm/low-coverage folder
 - High coverage bams (from JGI) from genotypes that didn't have seperately sequenced low coverage data (PanAnd & UCD) were subsampled down to 2-4X coverage (samtools view -s) and placed in data/final_bams/lowcov
-- All remaining low-coverage bams (PanAnd & UCD) that were not discarded were moved to data/final_bams/lowcov
-- All remaining high-coverage bams (JGI) that were not discarded were moved to data/final_bams/highcov
+- All remaining low-coverage bams (PanAnd & UCD) that were not discarded were moved to `data/final_bams/lowcov`
+- All remaining high-coverage bams (JGI) that were not discarded were moved to `data/final_bams/highcov`
 
 #3 Determine ploidy
 - nQuire was utilized to determine ploidy for all high-coverage Andropogon individuals. \
 I attempted to cluster the normalized maximum log-likelihood with mclust5 in R but it identified 8 and 9 clusters. \
 Instead, I plotted the normalized values and colored the points but known/unknown ploidy to identify groups. \
-Scripts are local in ~/Andropogon/nQuire. Ploidy was identified for 16 of 17 unknown individuals.
+Scripts are local in `~/Andropogon/nQuire`. Ploidy was identified for 16 of 17 unknown individuals.
 - If genome size could not be determined or inferred for an individual, the bam was moved to the folder data/interm/unknown-ploidy
 
 #4 Identify good sites in SNP filtering
 - Genotypes are called with bcftools mpileup & bcftools call for 2 sets of individuals: all high coverage (JGI) and all low covera$
 - SNPs are extracted using GATK. VCFs are converted to table format with GATK to examine quality distributions and set hard filter$
-        -- Low coverage SNPs (unfiltered): 463,763,393
-        -- High coverage SNPs (unfiltered): 480,857,741
+	-Low coverage SNPs (unfiltered): 463,763,393
+        - High coverage SNPs (unfiltered): 480,857,741
 - SNPs are hard filtered using GATK.
-        -- Lowcov: QUAL >= 30, MQ >= 30, biallelic
-        -- Highcov: QUAL >= 30, MQ >= 30, biallelic
+        - Lowcov: QUAL >= 30, MQ >= 30, biallelic
+        - Highcov: QUAL >= 30, MQ >= 30, biallelic
 - SNPs are filtered for genotype depth and missingness using a custom script (filter written by Mitra Melon)
-        -- Lowcov: min = 1, max = qpois(p = 0.99), < 20% missing data
-        -- Highcov: min = 8, max = qpois(p = 0.99), < 20% missing data
+        - Lowcov: min = 1, max = `qpois(p = 0.99)`, < 20% missing data
+        - Highcov: min = 8, max = `qpois(p = 0.99)`, < 20% missing data
 - Final filtered SNP counts:
-        -- Lowcov: 11,707,655
-        -- Highcov: 102,242,020
+        - Lowcov: 11,707,655
+        - Highcov: 102,242,020
 
 #5 Single-read genotypes (low-coverage only)
 - Single-read genotypes were extracted using ANGSD for all 11,707,655 positions
@@ -64,7 +64,9 @@ Low cov SNPs:
 selected for the kinship matrix.
 - The single-read genotypes were used to estimate the kinshp matrix in a custom script (`kinship_matrix.R`)
 - To estimate the diagonal of the kinship matrix (aka inbreeding), only sites with genotype depth > 2 were included. A single read was sampled\
-twice at each site and both draws were used to calculate inbreeding (the probability of sharing an allele IBD with yourself).
+twice at each site and both draws were used to calculate inbreeding (the probability of sharing an allele IBD with yourself). After drawing \
+the reads twice, I randomly selected the same set of 100k sites from both runs. These 100k snps were used to calculate inbreeding as the \
+probability of sharing an allele IBD with yourself.
 
 # 8 STRUCTURE
 Common garden individuals:
