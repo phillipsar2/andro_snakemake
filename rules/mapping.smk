@@ -40,14 +40,15 @@ rule bwa_map:
 #        r2 = "/group/jrigrp10/andropogon_shortreads/{sample}_2.fq.gz"
 #        r1 = "/group/jrigrp10/andropogon_shortreads/{sample}.merge.R1.fastq.gz",
 #        r2 = "/group/jrigrp10/andropogon_shortreads/{sample}.merge.R2.fastq.gz"
-        r1 = "/group/jrigrp10/andropogon_shortreads/ucd_seq/{sample}_R1_001.fastq.gz",
-        r2 = "/group/jrigrp10/andropogon_shortreads/ucd_seq/{sample}_R2_001.fastq.gz"
-
+#        r1 = "/group/jrigrp10/andropogon_shortreads/ucd_seq/{sample}_R1_001.fastq.gz",
+#        r2 = "/group/jrigrp10/andropogon_shortreads/ucd_seq/{sample}_R2_001.fastq.gz"
+        r1 = "data/raw/trimmed/{sample}.trim_1.fastq.gz",
+        r2 = "data/raw/trimmed/{sample}.trim_2.fastq.gz"
     output:
         temp("data/interm/mapped_bam/{sample}.mapped.bam")
 #    log:
 #        "logs/bwa_mem/{sample}.log",
-    threads: 4
+    threads: 8
 #    threads: 8
     shell:
         "bwa-mem2 mem -t {threads} {input.ref} {input.r1} {input.r2} |"
@@ -61,7 +62,7 @@ rule samtools_sort:
         temp("data/interm/sorted_bam/{sample}.sorted.bam"),
     params:
         tmp = "/scratch/aphillip/sort_bam/{sample}"
-    threads: 4
+    threads: 8
     run:
         shell("mkdir -p {params.tmp}")
         shell("samtools sort -T {params.tmp} -@ {threads} {input} > {output}")

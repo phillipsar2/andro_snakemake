@@ -56,13 +56,13 @@ miss = ["20"]
 CYT = ["6x"]
 
 # number of admixture groups (k) - for 14 groups do range(15))
-K = list(range(2,14))
+K = list(range(2,25))
 
 # which chain are we currently running for entropy?
 CHAIN = ["1"]
 
 # which run are we currently sampling for single read genotyping?
-RUN = ["3"]
+RUN = ["1","2"]
 
 # Rule all describes the final output of the pipeline
 rule all:
@@ -120,9 +120,11 @@ rule all:
         ## Kinship matrix
 #         cg_ibs = "data/pca/lowcov/cg.andro.lowcov.nomiss.ibs.gz"
 #         all_ibs = "data/pca/lowcov/all.andro.lowcov.all.miss20.ibs.gz"
-         kin_diag = expand("data/kinship/lowcov/all.andro.lowcov.all.miss20.min6.run{run}.ibs.gz", run = RUN)
+#         kin_diag = expand("data/kinship/lowcov/all.andro.lowcov.all.miss20.min2.run{run}.ibs.gz", run = RUN),
+#         kin_sub = "data/kinship/lowcov/all.andro.lowcov.miss20.min2.100k.run1.ibs.txt"
         ## STRUCTURE
 #         structure = expand("data/structure/cg.lowcov.50k.k{k}.run{run}.75steps.structure_output.txt_f", run = RUN, k = K)
+         structure = expand("data/structure/al.andro.lowcov.100k.k{k}.run{run}.75steps.structure_output.txt_f", run = RUN, k = K)
 
 ## Rules
 #include: "rules/mapping.smk"

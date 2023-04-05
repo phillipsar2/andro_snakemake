@@ -1,13 +1,13 @@
 {
     "__default__" :
     {
-      "p" : "bigmemm",
-      "mem" : "2G",
-      "time" : "7-00:00",
+      "p" : "high2",
+      "mem" : "8G",
+      "time" : "10-00:00",
       "name": "rando",
 #      "name": "{rule}_{wildcards}",
 #      "o": "slurm_out/{rule}_{wildcards}.%j.out",
-      "cpus-per-task": 1
+      "cpus-per-task": 4
     },
     "bwa_map" :
     {
@@ -16,7 +16,7 @@
       "p" : "bigmemm",
       "time" : "30-00:00",
       "name" : "bwa_map",
-      "cpus-per-task": 4,
+      "cpus-per-task": 8,
 # typically 8 or 4
     },
     "samtools_sort" :
@@ -26,7 +26,7 @@
 # typically 32 or 48
       "time" : "7-00:00",
       "name " : "samtools_sort",
-      "cpus-per-task": 4,
+      "cpus-per-task": 8,
     },
     "mark_dups" :
     {
@@ -37,7 +37,7 @@
     },
     "bamqc" :
     {
-      "p" : "bigmemm",
+      "p" : "high2",
 # typically 48 or 64
       "mem" : "24G",
       "time" : "7-00:00",

@@ -252,21 +252,42 @@ rule kin_diag:
         # all sites with less than 20% missing data
         sites = "data/angsd/lowcov/lowcov.all.miss20.positions"
     output:
-        "data/kinship/lowcov/all.andro.lowcov.all.miss20.min6.run{run}.ibs.gz"
+        ibs = "data/kinship/lowcov/all.andro.lowcov.all.miss20.min2.run{run}.ibs.gz",
+        bamrand = "data/kinship/lowcov/bamlist.rand.run{run}.txt"
     params:
-        prefix = "data/kinship/lowcov/all.andro.lowcov.all.miss20.min6.run{run}",
+        prefix = "data/kinship/lowcov/all.andro.lowcov.all.miss20.min2.run{run}",
         seed = random.randint(1,100)
     run:
+        shell("shuf {input.bamlist} > {output.bamrand}")
         shell("angsd \
         -sites {input.sites} \
-        -bam {input.bamlist} \
-        -setMinDepthInd 6 \
+        -bam {output.bamrand} \
+        -setMinDepthInd 2 \
         -doMajorMinor 3 \
         -doCounts 1 \
         -ref {input.ref} \
         -doIBS 1 \
         -seed {params.seed} \
         -out {params.prefix}")
+
+# (3) Subset random 100k SNPs
+rule kin_sub:
+    input:
+        run1 = "data/kinship/lowcov/all.andro.lowcov.all.miss20.min2.run1.ibs.gz",
+        run2 = "data/kinship/lowcov/all.andro.lowcov.all.miss20.min2.run2.ibs.gz"
+    output:
+        run1 = "data/kinship/lowcov/all.andro.lowcov.miss20.min2.100k.run1.ibs.txt",
+        run2 = "data/kinship/lowcov/all.andro.lowcov.miss20.min2.100k.run2.ibs.txt"
+    shell:
+        """
+        get_seeded_random(){{ \\
+        seed="$1" \\
+        openssl enc -aes-256-ctr -pass pass:"$seed" -nosalt \\
+        </dev/zero 2>/dev/null}}
+        shuf -n 100000 --random-source=<(get_seeded_random 24) <(zcat {input.run1) > {output.run1}
+        shuf -n 100000 --random-source=<(get_seeded_random 24) <(zcat {input.run2) > {output.run2} 
+        """
+
 
 # (3) Calculate diagonal (inbreeding) with all sites
 rule inbred:
@@ -292,14 +313,17 @@ rule inbred:
 
 rule structure:
     input:
-        sites = "data/structure/cg.lowcov.50k.structure_input.txt",
+#        sites = "data/structure/cg.lowcov.50k.structure_input.txt",
+        sites = "data/structure/all.andro.lowcov.100k.structure_input.txt",
         main = "data/structure/mainparams",
         extra = "data/structure/extraparams"
     output:
-        "data/structure/cg.lowcov.50k.k{k}.run{run}.75steps.structure_output.txt_f"
+#        "data/structure/cg.lowcov.50k.k{k}.run{run}.75steps.structure_output.txt_f"
+        "data/structure/al.andro.lowcov.100k.k{k}.run{run}.75steps.structure_output.txt_f"
     params:
         k = "{k}",
-        out = "data/structure/cg.lowcov.50k.k{k}.run{run}.75steps.structure_output.txt"
+#        out = "data/structure/cg.lowcov.50k.k{k}.run{run}.75steps.structure_output.txt"
+        out = "data/structure/all.andro.lowcov.100k.k{k}.run{run}.75steps.structure_output.txt"
     run:
         #module load structure-console/2.3.4
         shell("structure -m {input.main} -e {input.extra} -K {params.k} -i {input.sites} -o {params.out}")
