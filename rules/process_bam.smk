@@ -53,11 +53,13 @@ rule add_rg:
 # tested with nr = 10000 and nw = 400, failed
 rule bamqc:
     input:
-        "data/interm/mark_dups/{geno}.{merge_A}.{merge_B}.merged.rg.dedup.bam"
+#        "data/interm/mark_dups/{geno}.{merge_A}.{merge_B}.merged.rg.dedup.bam"
+        "data/final_bams/lowcov/6x_subsample/{low_geno}_{low_per}.subsample.bam",
     output:
-        "reports/bamqc/merged/{geno}.{merge_A}.{merge_B}_stats/genome_results.txt"
+#        "reports/bamqc/merged/{geno}.{merge_A}.{merge_B}_stats/genome_results.txt"
+        "reports/bamqc/subsampled/{low_geno}_{low_per}_stats/genome_results.txt"
     params:
-        dir = "reports/bamqc/merged/{geno}.{merge_A}.{merge_B}_stats"
+        dir = "reports/bamqc/subsampled/{low_geno}_{low_per}_stats"
     run: 
         shell("qualimap bamqc \
         -bam {input} \
@@ -68,3 +70,17 @@ rule bamqc:
         -outformat HTML \
         --skip-duplicated \
         --java-mem-size=20G")    
+
+# Subsample low coverage 6x bams to even coverage
+# Goal is 0.5-1.5X coverage, only subsampling the genotypes not within that range
+rule subsample_6x:
+    input:
+        bam_path = "/group/jrigrp6/andropogon_sequence/data/final_bams/{low_geno}.bam"
+    output:
+        "data/final_bams/lowcov/6x_subsample/{low_geno}_{low_per}.subsample.bam"
+    params:
+        frac = "{low_per}",
+    shell:
+        """
+        samtools view -b -s {params.frac} {input.bam_path} > {output}
+        """

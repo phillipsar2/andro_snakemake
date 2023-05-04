@@ -70,7 +70,16 @@ probability of sharing an allele IBD with yourself.
 
 ## 8. STRUCTURE
 ### Common garden individuals:
-- 50k random snps with < 20% missing data were used for STRUCTURE
+- 50k random SNPs with < 20% missing data were used for STRUCTURE
+
+### All individuals
+- 100k random SNPs with < 20% missing data used for STRUCTURE
+
+## 9. Inbreeding coefficient and nucleotide diversity
+- Estimated only in the 6x genotypes
+- Bams were subsampled to less than 1.7X coverage (`samtools -view -b -s`) in order to reduce bias caused by coverage
+- Genotype likelihoods were estimated and SNPs were called in ANGSD using the above SNP filtering criteria
+- Inbreeding coefficient was estimated with `ngsF`
 
 
 # --------

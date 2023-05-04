@@ -8,8 +8,8 @@ SAMPLE = glob_wildcards("/group/jrigrp10/andropogon_shortreads/ucd_seq/{sample}_
 #print(SAMPLE)
 
 # BAM names encompass all samples regardless of their fastq pattern
-BAM = glob_wildcards("data/interm/mark_dups/{bam}.dedup.bam").bam
-#BAM = glob_wildcards("data/final_bams/lowcov/{bam}.dedup.bam").bam
+#BAM = glob_wildcards("data/interm/mark_dups/{bam}.dedup.bam").bam
+BAM = glob_wildcards("data/final_bams/lowcov/{bam}.dedup.bam").bam
 #BAM = glob_wildcards("data/final_bams/highcov/{bam}.dedup.bam").bam
 #print(BAM)
 
@@ -23,7 +23,14 @@ GENO = list(file.Genotype)
 HIGH = glob_wildcards("data/interm/mark_dups/IN{high}.dedup.bam").high
 
 # LOW_SUB contains the lowcov processed bams that need to be subsampled to even lower coverage
+filebp = pd.read_csv("6x_bams_to_subset.tsv", sep = "\t", header = 0)
+#fileb = pd.read_csv("6x_bams_to_subset_bams.tsv", sep = "\t", header = 0)
+#LOW_GENO = filebp.bam.str.split(pat="/", expand=True)[7].astype(str).tolist()
+lg_temp = filebp.bam.str.split(pat="/", expand=True)[6] + "/" + filebp.bam.str.split(pat="/", expand=True)[7]
+LOW_GENO = lg_temp.tolist()
 
+#filef = pd.read_csv("6x_bams_to_subset_frac.tsv", sep = "\t", header = 0)
+LOW_PER = list(filebp.fraction)
 
 # filep contains the bams nQuire was run on to determine ploidy
 filep = pd.read_csv("bams_nquire.csv", sep = "\t", header = None)
@@ -97,18 +104,6 @@ rule all:
 #         dp_miss = expand("reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.0.99_0_1.txt", chr = CHROM, cov = COV),
 #        grab_snps = expand("data/processed/filtered_snps_bpres/{cov}/all.AG.{cov}.{chr}.filtered.{p}.{miss}.snps.vcf.gz", cov = COV, p = p, miss = miss, chr = CHROM),
 #        grab_gl = expand("data/processed/filtered_snps_bpres/{cov}/all.AG.{cov}.{chr}.PL.txt", cov = COV, chr = CHROM)
-        ## EBG
-#        split_ploidy = expand("data/processed/filtered_snps_bpres/lowcov/AG.lowcov.{chr}.{ploidy}.snps.vcf", chr = CHROM, ploidy = CYT),
-#        ad_mat = expand("data/ebg/lowcov/total_reads.{chr}.{ploidy}.txt", chr = CHROM, ploidy = CYT),
-#        ebg = expand("data/ebg/lowcov/{chr}.{ploidy}-PL.txt", chr = CHROM, ploidy = CYT),
-#        gl_mat = expand("data/ebg/lowcov/{chr}-GL.txt", chr = CHROM),
-#        rand_snps = "data/ebg/lowcov/10k_lowcov-GL.txt"
-#        filt_miss = expand("data/ebg/lowcov/genoliks/{chr}.miss20-GL.txt", chr = CHROM)
-        ## ENTROPY
-#         ent_in = "data/entropy/lowcov/10k_lowcov.miss5.mpgl",
-#        ent_in_tab = "data/entropy/highov/10k_highcov.mpgl"
-#        entropy = expand("data/entropy/{cov}/10k_{cov}.{k}.{chain}.hdf5", cov = COV, k = K, chain = CHAIN)
-#        ent_out = expand("data/entropy/{cov}/qest.k{k}.c{chain}.txt", cov = COV, k = K, chain = CHAIN)
         ## High cov PCA
 #        pca =  expand("data/angsd/pca/highcov.{chrom}.8dp70.beagle.gz", chrom = CHROM)
 #        pcaangsd = "data/angsd/pca/highcov.merged.8dp70.cov"
@@ -124,13 +119,20 @@ rule all:
 #         kin_sub = "data/kinship/lowcov/all.andro.lowcov.miss20.min2.100k.run1.ibs.txt"
         ## STRUCTURE
 #         structure = expand("data/structure/cg.lowcov.50k.k{k}.run{run}.75steps.structure_output.txt_f", run = RUN, k = K)
-         structure = expand("data/structure/al.andro.lowcov.100k.k{k}.run{run}.75steps.structure_output.txt_f", run = RUN, k = K)
+#         structure = expand("data/structure/al.andro.lowcov.100k.k{k}.run{run}.75steps.structure_output.txt_f", run = RUN, k = K)
+        ## Diversity stats
+#          subsample_6x = expand("data/final_bams/lowcov/6x_subsample/{low_geno}_{low_per}.subsample.bam", zip, low_geno = LOW_GENO, low_per = LOW_PER)
+         qualimap = expand("reports/bamqc/subsampled/{low_geno}_{low_per}_stats/genome_results.txt", zip, low_geno = LOW_GENO, low_per = LOW_PER),
+#         ngsF = "data/angsd/lowcov_6x/lowcov_6x_andro.approx_indF"
+        ## Aneuploidy
+         cov = expand("data/bedtools/coverage/{bam}.1Mb.cov.txt", bam = BAM)
 
 ## Rules
 #include: "rules/mapping.smk"
-#include: "rules/process_bam.smk"
+include: "rules/process_bam.smk"
+include: "rules/aneuploidy.smk"
 #include: "rules/determine_ploidy.smk"
 #include: "rules/calling.smk"
 #include: "rules/filtering.smk"
 #include: "rules/gl_calling.smk"
-include: "rules/pop_struc.smk"
+#include: "rules/pop_struc.smk"

@@ -56,8 +56,7 @@ rule PCA_single:
         -doIBS 1 \
         -out {params.prefix}")
 
-# (4) Plot in R
-
+# (4) Plot in R - scripts local
 
 
 ###
@@ -87,10 +86,6 @@ rule cg_ibs:
         -out {params.prefix}")
 
 ###
-### Kinship matrix for all low coverage
-###
-
-###
 ### Kinship matrix - All Andropogon, low coverage 
 ###
 
@@ -116,70 +111,7 @@ rule all_ibs:
         -doIBS 1 \
         -out {params.prefix}")
 
-# (2) Grab a random read at same sites as step (1) but also require depth > 2
-## This needs to be run twice to calculate the diagonal of the kinship matrix
-rule kin_diag:
-    input:
-        ref = config.ref,
-        # All Andro
-        bamlist = "data/final_bams/lowcov/all.bamlist",
-        # all sites with less than 20% missing data
-        sites = "data/angsd/lowcov/lowcov.all.miss20.positions"
-    output:
-        ibs = "data/kinship/lowcov/all.andro.lowcov.all.miss20.min2.run{run}.ibs.gz",
-        bamrand = "data/kinship/lowcov/bamlist.rand.run{run}.txt"
-    params:
-        prefix = "data/kinship/lowcov/all.andro.lowcov.all.miss20.min2.run{run}",
-        seed = random.randint(1,100)
-    run:
-        shell("shuf {input.bamlist} > {output.bamrand}")
-        shell("angsd \
-        -sites {input.sites} \
-        -bam {output.bamrand} \
-        -setMinDepthInd 2 \
-        -doMajorMinor 3 \
-        -doCounts 1 \
-        -ref {input.ref} \
-        -doIBS 1 \
-        -seed {params.seed} \
-        -out {params.prefix}")
-
-# (3) Subset random 100k SNPs
-rule kin_sub:
-    input:
-        run1 = "data/kinship/lowcov/all.andro.lowcov.all.miss20.min2.run1.ibs.gz",
-        run2 = "data/kinship/lowcov/all.andro.lowcov.all.miss20.min2.run2.ibs.gz"
-    output:
-        run1 = "data/kinship/lowcov/all.andro.lowcov.miss20.min2.100k.run1.ibs.txt",
-        run2 = "data/kinship/lowcov/all.andro.lowcov.miss20.min2.100k.run2.ibs.txt"
-    shell:
-        """
-        get_seeded_random(){{ \\
-        seed="$1" \\
-        openssl enc -aes-256-ctr -pass pass:"$seed" -nosalt \\
-        </dev/zero 2>/dev/null}}
-        shuf -n 100000 --random-source=<(get_seeded_random 24) <(zcat {input.run1) > {output.run1}
-        shuf -n 100000 --random-source=<(get_seeded_random 24) <(zcat {input.run2) > {output.run2} 
-        """
-
-
-# (3) Calculate diagonal (inbreeding) with all sites
-rule inbred:
-   input:
-        "all.andro.lowcov.miss20.min2.100k.run2.ibs.txt"
-   output:
-        "all.andro.lowcov.miss20.inbreedingcoef.csv"
-   run:
-        import pandas as pd
-        import numpy as np
-        run2 = pd.read_table("all.andro.lowcov.miss20.min2.100k.run2.ibs.txt", header = None)
-        run1 = pd.read_table("all.andro.lowcov.miss20.min2.100k.run1.ibs.txt", header = None)
-        sum = run1 + run2
-        sum_mat = sum.iloc[:, 4:]
-        af = sum_mat / 2
-        af[af < 0] = np.nan
-        inbred = af.mean(axis = 0)
-        inbred.to_csv("all.andro.lowcov.miss20.inbreedingcoef.csv", index = False, header=False)
+# (2) Estimate kinship matrix in custom script in R
 
 ###
 ### STRUCTURE 
@@ -187,7 +119,9 @@ rule inbred:
 
 rule structure:
     input:
+        ## Common garden
 #        sites = "data/structure/cg.lowcov.50k.structure_input.txt",
+        ## All andropogon
         sites = "data/structure/all.andro.lowcov.100k.structure_input.txt",
         main = "data/structure/mainparams",
         extra = "data/structure/extraparams"
@@ -203,19 +137,65 @@ rule structure:
         shell("structure -m {input.main} -e {input.extra} -K {params.k} -i {input.sites} -o {params.out}")
 
 ###
-### Treemix
+### Inbreeding in 6x
 ###
 
-# (2) Convert to treemix format
-# treemix_input.R
+# (1) call genotype likelihoods with ANGSD
 
-# (3) Run treemix
-rule treemix:
+# -doGlf 3 required for ngsF - binary 3 times likelihood (.glf.gz)
+# -minInd 21 - set the minimum number of individuals with data to 21 (20%)
+# -GL 1 - SAMtools GL model
+# -doMaf 1 - minor allele frequency is known
+# -doMajorMinor 4 - known major allele is from the reference
+rule call_gls:
     input:
-        "data/treemix/all.andro.lowcov.treemix.txt.gz"
+        bams = expand("data/final_bams/lowcov/6x_subsample/{low_geno}_{low_per}.subsample.bam", zip, low_geno = LOW_GENO, low_per = LOW_PER),
+        ref = config.ref
     output:
-        "data/treemix/all.andro.lowcov.cov.gz"
+        "data/angsd/lowcov_6x/lowcov_6x_andro.glf.gz"
     params:
-        prefix = "data/treemix/all.andro.lowcov"
-    run:
-        shell("~/toolsfordayz/treemix-1.13/src/treemix -i {input} -o {params.prefix}")
+        prefix = "data/angsd/lowcov_6x/lowcov_6x_andro"
+    shell:
+        """
+        angsd \
+        -GL 1 -P 15 \
+        -doGlf 3 \
+        -doMajorMinor 4 \
+        -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -trim 0 -C 50 \
+        -minMapQ 30 -minQ 30 \
+        -setMinDepthInd 1 -setMaxDepthInd 6 \
+        -minInd 21 \
+        -bam {input.bams} \
+        -doMaf 1 \
+        -doMajorMinor 4 \
+        -ref {input.ref} \
+        -SNP_pval 1e-6 \
+        -out {params.prefix}
+        """
+
+# (2) Estimate inbreeding coefficient (F) with ngsF
+
+## Use approximated method first and then main EM algorithm if needed
+## Should be run multiple times to assess convergence
+
+# --init_values r - start with random intial values (recommended for low coverage)
+# --min_epsilon - Maximum RMSD between iterations to assume convergence (ideally want a value of zero)
+rule ngsF:
+    input:
+        gl = "data/angsd/lowcov_6x/lowcov_6x_andro.glf.gz"
+    output:
+        "data/angsd/lowcov_6x/lowcov_6x_andro.approx_indF"
+    shell:
+        """
+        ngsF \
+        --n_ind 106 \
+        --n_sites {params.sites} \
+        --init_values r \
+        --glf {input.gl} --out {output} \
+        --approx_EM \
+        --seed 12345 \
+        --min_epsilon 1e-6
+        """
+    
+    
+
