@@ -18,7 +18,7 @@ rule bam2bed:
     
 
 # (2) Extract depth across genome in 1Mb windows for each bam file
-
+# coverage is calculate for -a 
 rule get_cov:
     input:
         ref = config.ref,
@@ -28,5 +28,8 @@ rule get_cov:
         cov = "data/bedtools/coverage/{bam}.1Mb.cov.txt"
     shell:
         """
-        bedtools coverage -a {input.bed} -b {input.windows} > {output.cov}
+        bedtools coverage -b {input.bed} -a {input.windows} > {output.cov}
         """
+
+
+

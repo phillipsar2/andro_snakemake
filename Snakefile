@@ -122,7 +122,7 @@ rule all:
 #         structure = expand("data/structure/al.andro.lowcov.100k.k{k}.run{run}.75steps.structure_output.txt_f", run = RUN, k = K)
         ## Diversity stats
 #          subsample_6x = expand("data/final_bams/lowcov/6x_subsample/{low_geno}_{low_per}.subsample.bam", zip, low_geno = LOW_GENO, low_per = LOW_PER)
-         qualimap = expand("reports/bamqc/subsampled/{low_geno}_{low_per}_stats/genome_results.txt", zip, low_geno = LOW_GENO, low_per = LOW_PER),
+#         qualimap = expand("reports/bamqc/subsampled/{low_geno}_{low_per}_stats/genome_results.txt", zip, low_geno = LOW_GENO, low_per = LOW_PER),
 #         ngsF = "data/angsd/lowcov_6x/lowcov_6x_andro.approx_indF"
         ## Aneuploidy
          cov = expand("data/bedtools/coverage/{bam}.1Mb.cov.txt", bam = BAM)

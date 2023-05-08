@@ -81,8 +81,12 @@ probability of sharing an allele IBD with yourself.
 - Genotype likelihoods were estimated and SNPs were called in ANGSD using the above SNP filtering criteria
 - Inbreeding coefficient was estimated with `ngsF`
 
+## 10. Aneuploidy detection
+- lowcov BAM files were converted to bed files using `bedtools bamtobed`
+- average coverage was calculated in 1 Mbp windows across the genome for each genotype using `bedtools coverage`
+-- Coverage was not calculated for the following genotypes due to data quality:`AN20N023`,`AN20NSCR000363`,`AN20NSCR000409`
 
-# --------
+# ---- Other ----
 
 
 #6 Estimating genotype probabilities
@@ -91,7 +95,6 @@ probability of sharing an allele IBD with yourself.
 - Using a custom R script that utilizes vcfR (scripts/vcf2ADmatrix.R), I extracted the matrices for total read count and alternate read count
 - I ran EBG independently on each ploidy to calculate phred-scaled genotype probabilites (1000 interactions; error = 0.01)
 - The phred-scaled genotype likelihood EBG output was converted to a matrix and the files for each ploidy were combined using a custom script (scripts/ebg2glmatrix_2ploidy.R)
-
 
 #8 PCA
 ##High cov SNPs:
@@ -103,15 +106,6 @@ and a total sequencing depth below 8 and above 70 (-doCounts 1 -setMinDepthInd 8
 - Genotype likelihoods were output as a beagle file (-doGlf 2).
 - 30K sites were randomly grabbed from the beagle file using shuf.
 - The PCA was ran with PCangsd using default settings. The PCA was plotted in R with ggplot2.
-
-##Low cov SNPs:
-- The GL table was filtered for X% missing data. This left a total of X SNPs.
-- 20K SNPs were randomly selected using 'shuf'.
-- Individual allele frequencies were calculated in R using a custom script. 
-- Allele frequencies were standardized seperately for each ploidy using a Patterson's standardization.\
- This standardization method properly accounts for the difference in variation between the two cytotypes.
-- A PCA was ran in R using 'prcomp' on the standardized allele frequencies. Results were plotted with ggplot2.
-
 
 ####
 # Analyses that were unsuccessful
