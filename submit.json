@@ -102,5 +102,19 @@
       "p" : "bigmemm",
       "time" : "30-00:00",
       "name" : "entropy",
+    },
+    "get_cov" :
+    {
+      "mem": "72G",
+      "p" : "high2",
+      "time" : "30-00:00",
+      "name" : "get_cov",
+    },
+    "call_gls" :
+    {
+      "mem": "32G",
+      "p" : "high2",
+      "time" : "30-00:00",
+      "name" : "call_gls",
     }
 }

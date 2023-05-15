@@ -149,23 +149,23 @@ rule structure:
 # -doMajorMinor 4 - known major allele is from the reference
 rule call_gls:
     input:
-        bams = expand("data/final_bams/lowcov/6x_subsample/{low_geno}_{low_per}.subsample.bam", zip, low_geno = LOW_GENO, low_per = LOW_PER),
+        bams = expand("data/final_bams/6x_subsample/{low_geno}_{low_per}.subsample.bam", zip, low_geno = LOW_GENO, low_per = LOW_PER),
         ref = config.ref
     output:
-        "data/angsd/lowcov_6x/lowcov_6x_andro.glf.gz"
+        "data/angsd/lowcov_6x/lowcov_6x_andro.{chrom}.glf.gz"
     params:
-        prefix = "data/angsd/lowcov_6x/lowcov_6x_andro"
+        prefix = "data/angsd/lowcov_6x/lowcov_6x_andro.{chrom}",
+        chrom = "{chrom}"
     shell:
         """
         angsd \
         -GL 1 -P 15 \
         -doGlf 3 \
-        -doMajorMinor 4 \
         -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -trim 0 -C 50 \
         -minMapQ 30 -minQ 30 \
         -setMinDepthInd 1 -setMaxDepthInd 6 \
-        -minInd 21 \
-        -bam {input.bams} \
+        -bam data/final_bams/6x_subsample/subsampled.bamlist \
+        -r {params.chrom} \
         -doMaf 1 \
         -doMajorMinor 4 \
         -ref {input.ref} \

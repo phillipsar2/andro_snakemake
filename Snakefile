@@ -42,10 +42,10 @@ UNKNOWN = list(filep[0])
 #VCF = list(fileg.Sequencefile)
 
 # List of all chromsomes
-#chr = pd.read_csv(config.contig_list, header = None)
-#CHROM = list(chr[0])
+chr = pd.read_csv(config.contig_list, header = None)
+CHROM = list(chr[0])
 ## low cov scaffolds w sites not filtered out (some lost entirely)
-CHROM = ["Chr01A","Chr01B","Chr01C","Chr02A","Chr02B","Chr02C","Chr03A","Chr03B","Chr03C","Chr04A","Chr04B","Chr04C","Chr05A","Chr05B","Chr05C","Chr06A","Chr06B","Chr06B","Chr06C","Chr07A","Chr07B","Chr07C","Chr08A","Chr08C","Chr08B","Chr09A","Chr09B","Chr09C","Chr10A","Chr10B","Chr10C","scaffold_144","scaffold_163","scaffold_32","scaffold_490","scaffold_542","scaffold_965"]
+#CHROM = ["Chr01A","Chr01B","Chr01C","Chr02A","Chr02B","Chr02C","Chr03A","Chr03B","Chr03C","Chr04A","Chr04B","Chr04C","Chr05A","Chr05B","Chr05C","Chr06A","Chr06B","Chr06B","Chr06C","Chr07A","Chr07B","Chr07C","Chr08A","Chr08C","Chr08B","Chr09A","Chr09B","Chr09C","Chr10A","Chr10B","Chr10C","scaffold_144","scaffold_163","scaffold_32","scaffold_490","scaffold_542","scaffold_965"]
 ## high cov scaffolds w sites not filtered out (some lost entirely)
 #CHROM =  ["Chr01A", "Chr01B", "Chr01C", "Chr02A", "Chr02C", "Chr02B", "Chr03A", "Chr03B", "Chr03C", "Chr04A", "Chr04B", "Chr04C", "Chr05A", "Chr05B", "Chr05C", "Chr06A", "Chr06B", "Chr06C", "Chr07A", "Chr07B", "Chr07C", "Chr08A", "Chr08B", "Chr08C", "Chr09A", "Chr09B", "Chr09C", "Chr10A", "Chr10B", "Chr10C", "scaffold_144", "scaffold_163", "scaffold_263", "scaffold_32", "scaffold_490", "scaffold_542", "scaffold_590", "scaffold_64", "scaffold_965"]
 #print(CHROM)
@@ -123,16 +123,17 @@ rule all:
         ## Diversity stats
 #          subsample_6x = expand("data/final_bams/lowcov/6x_subsample/{low_geno}_{low_per}.subsample.bam", zip, low_geno = LOW_GENO, low_per = LOW_PER)
 #         qualimap = expand("reports/bamqc/subsampled/{low_geno}_{low_per}_stats/genome_results.txt", zip, low_geno = LOW_GENO, low_per = LOW_PER),
+          gls =  expand("data/angsd/lowcov_6x/lowcov_6x_andro.{chrom}.glf.gz", chrom = CHROM)
 #         ngsF = "data/angsd/lowcov_6x/lowcov_6x_andro.approx_indF"
         ## Aneuploidy
-         cov = expand("data/bedtools/coverage/{bam}.1Mb.cov.txt", bam = BAM)
+#         cov = expand("data/bedtools/coverage/{bam}.1Mb.cov.txt", bam = BAM)
 
 ## Rules
 #include: "rules/mapping.smk"
-include: "rules/process_bam.smk"
-include: "rules/aneuploidy.smk"
+#include: "rules/process_bam.smk"
+#include: "rules/aneuploidy.smk"
 #include: "rules/determine_ploidy.smk"
 #include: "rules/calling.smk"
 #include: "rules/filtering.smk"
 #include: "rules/gl_calling.smk"
-#include: "rules/pop_struc.smk"
+include: "rules/pop_struc.smk"
