@@ -75,7 +75,7 @@ rule bamqc:
 # Goal is 0.5-1.5X coverage, only subsampling the genotypes not within that range
 rule subsample_6x:
     input:
-        bam_path = "/group/jrigrp6/andropogon_sequence/data/final_bams/{low_geno}.bam"
+        bam_path = "data/final_bams/{low_geno}.bam"
     output:
         "data/final_bams/lowcov/6x_subsample/{low_geno}_{low_per}.subsample.bam"
     params:
