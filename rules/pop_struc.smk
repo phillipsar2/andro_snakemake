@@ -122,16 +122,20 @@ rule structure:
         ## Common garden
 #        sites = "data/structure/cg.lowcov.50k.structure_input.txt",
         ## All andropogon
-        sites = "data/structure/all.andro.lowcov.100k.structure_input.txt",
+#        sites = "data/structure/all.andro.lowcov.100k.structure_input.txt",
+        ## All andropogon without inbreds
+        sites = "data/structure/noinbreds.andro.lowcov.100k.structure_input.txt",
         main = "data/structure/mainparams",
         extra = "data/structure/extraparams"
     output:
 #        "data/structure/cg.lowcov.50k.k{k}.run{run}.75steps.structure_output.txt_f"
-        "data/structure/al.andro.lowcov.100k.k{k}.run{run}.75steps.structure_output.txt_f"
+#        "data/structure/all.andro.lowcov.100k.k{k}.run{run}.75steps.structure_output.txt_f"
+        "data/structure/noinbreds.andro.lowcov.100k.k{k}.run{run}.75steps.structure_output.txt_f"
     params:
         k = "{k}",
 #        out = "data/structure/cg.lowcov.50k.k{k}.run{run}.75steps.structure_output.txt"
-        out = "data/structure/all.andro.lowcov.100k.k{k}.run{run}.75steps.structure_output.txt"
+#        out = "data/structure/all.andro.lowcov.100k.k{k}.run{run}.75steps.structure_output.txt"
+        out = "data/structure/noinbreds.andro.lowcov.100k.k{k}.run{run}.75steps.structure_output.txt"
     run:
         #module load structure-console/2.3.4
         shell("structure -m {input.main} -e {input.extra} -K {params.k} -i {input.sites} -o {params.out}")
@@ -163,7 +167,7 @@ rule call_gls:
         -doGlf 3 \
         -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -trim 0 -C 50 \
         -minMapQ 30 -minQ 30 \
-        -setMinDepthInd 1 -setMaxDepthInd 6 \
+#        -setMinDepthInd 1 -setMaxDepthInd 6 \
         -bam data/final_bams/6x_subsample/subsampled.bamlist \
         -r {params.chrom} \
         -doMaf 1 \
