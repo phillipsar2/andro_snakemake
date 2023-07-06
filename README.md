@@ -75,16 +75,22 @@ probability of sharing an allele IBD with yourself.
 ### All individuals
 - 100k random SNPs with < 20% missing data used for STRUCTURE
 
-## 9. Inbreeding coefficient and nucleotide diversity
+## 9. Inbreeding coefficient
 - Estimated only in the 6x genotypes
-- Bams were subsampled to less than 1.7X coverage (`samtools -view -b -s`) in order to reduce bias caused by coverage
-- Genotype likelihoods were estimated and SNPs were called in ANGSD using the above SNP filtering criteria
-- Inbreeding coefficient was estimated with `ngsF`
+- Bams were subsampled to less than 1.5X coverage, if they weren't already below that threshold, (`samtools -view -b -s`) in order to reduce\
+ bias caused by coverage. Coverage percentages to subsample to are stored in `./6x_bams_to_subset.tsv`.
+- Genotype likelihoods were estimated and SNPs were called in ANGSD using the above SNP filtering criteria.
+- Inbreeding coefficient was estimated with `ngsF` and plotted in R.
 
 ## 10. Aneuploidy detection
 - lowcov BAM files were converted to bed files using `bedtools bamtobed`
 - average coverage was calculated in 1 Mbp windows across the genome for each genotype using `bedtools coverage`
 -- Coverage was not calculated for the following genotypes due to data quality:`AN20N023`,`AN20NSCR000363`,`AN20NSCR000409`
+
+
+## 11. Thetas
+- Estiamted only in the 6x genotypes utilizing the subsampled bams.
+- The SAF, SFS, and thetas were estimate for (1) each population with more than 3 genotypes and (2) the West and East genetic group.
 
 # ---- Other ----
 
