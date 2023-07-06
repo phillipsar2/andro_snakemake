@@ -230,19 +230,15 @@ rule ngsF_deep:
 
 # (1) Estimate the global SFS 
 # -doSaf 1 estimate the SFS based on ind genotype likelihoods
-# -minInd 80 80/107 genotypes need to have the site (~75%)
-# -minInd 53 53/107 genotypes need to have the site (~50%)
+# -minInd 3 100% of the genotypes (n = 3) need data at the site
 rule angsd_saf:
     input:
         ref = config.ref,
-        bamlist = "data/final_bams/6x_subsample/6x_subsampled.bamlist"
-#        glf = "data/angsd/lowcov_6x/lowcov_6x_andro.{chrom}.glf.gz",
-#        fai = config.fai
+        bamlist = "data/final_bams/6x_subsample/bamlists/{pops}.bamlist"
     output:
-#        "data/angsd/saf/lowcov_6x_andro.{chrom}.75per.saf.gz"
-        "data/angsd/saf/lowcov_6x_andro.{chrom}.50per.saf.gz"
+        temp("data/angsd/saf/{pops}.{chrom}.50per.saf.gz")
     params:
-        prefix = "data/angsd/saf/lowcov_6x_andro.{chrom}.50per",
+        prefix = "data/angsd/saf/{pops}.{chrom}.50per",
         chrom = "{chrom}"
     shell:
         """
@@ -253,7 +249,7 @@ rule angsd_saf:
         -doCounts 1 -setMinDepthInd 1 -setMaxDepthInd 6 \
         -b {input.bamlist} \
         -r {params.chrom} \
-        -minInd 53 \
+        -minInd 3 \
         -ref {input.ref} -anc {input.ref} \
         -doSaf 1 \
         -out {params.prefix}
@@ -265,11 +261,11 @@ rule angsd_saf:
 rule pop_sfs:
     input:
         ref = config.ref,
-        saf = "data/angsd/saf/lowcov_6x_andro.{chrom}.50per.saf.gz",
+        saf = "data/angsd/saf/{pops}.{chrom}.50per.saf.gz",
     output:
-        sfs = "data/angsd/saf/lowcov_6x_andro.{chrom}.50per.sfs"
+        sfs = temp("data/angsd/saf/{pops}.{chrom}.sfs")
     params:
-        prefix = "data/angsd/saf/lowcov_6x_andro.{chrom}.50per"
+        prefix = "data/angsd/saf/{pops}.{chrom}"
     run:
         shell("realSFS {params.prefix}.saf.idx  -P 10 -fold 1 > {params.prefix}.sfs")
         shell("realSFS saf2theta {params.prefix}.saf.idx -sfs {params.prefix}.sfs -outname {params.prefix}")
@@ -278,11 +274,11 @@ rule pop_sfs:
 ### when using a folded SFS, only thetaW (tW), thetaD (tP), and tajimasD will be meaningful in the output of realSFS
 rule pop_pi:
     input:
-        sfs = "data/angsd/saf/lowcov_6x_andro.{chrom}.75per.sfs"
+        sfs = "data/angsd/saf/{pops}.{chrom}.sfs"
     output:
-        stats = "data/angsd/saf/lowcov_6x_andro.{chrom}.{window}.thetas.idx.pestPG"
+        stats = "data/angsd/theta/{pops}.{chrom}.{window}.thetas.idx.pestPG"
     params:
-        prefix = "data/angsd/saf/lowcov_6x_andro.{chrom}.{window}.75per",
+        prefix = "data/angsd/theta/{pops}.{chrom}.{window}",
         win = "{window}"
     run:
         shell("thetaStat do_stat {params.prefix}.thetas.idx \

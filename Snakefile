@@ -71,6 +71,10 @@ CHAIN = ["1"]
 # which run are we currently sampling for single read genotyping?
 RUN = ["1","2"]
 
+# Population IDs for theta estimateion
+POPS = ["AFT", "AUS","BAR","BOU","CDB","CUI","DES","ESL","FUL","KEN","KON","MAN","MIL","REL","SAL","SUT","TWE","WAL","WEB"]
+#POPS = ["west","east"]
+
 # window size for theta estimation
 WINDOW = ["10000", "50000"]
 
@@ -125,14 +129,15 @@ rule all:
 #         structure = expand("data/structure/all.andro.lowcov.100k.k{k}.run{run}.75steps.structure_output.txt_f", run = RUN, k = K)
 #         structure = expand("data/structure/noinbreds.andro.lowcov.100k.k{k}.run{run}.75steps.structure_output.txt_f", run = RUN, k = K),
         ## Diversity stats
-         subsample_6x = expand("data/final_bams/6x_subsample/{low_geno}_{low_per}.subsample.bam", zip, low_geno = LOW_GENO, low_per = LOW_PER),
+#         subsample_6x = expand("data/final_bams/6x_subsample/{low_geno}_{low_per}.subsample.bam", zip, low_geno = LOW_GENO, low_per = LOW_PER),
 #         qualimap = expand("reports/bamqc/subsampled/{low_geno}_{low_per}_stats/genome_results.txt", zip, low_geno = LOW_GENO, low_per = LOW_PER),
 #         gls =  expand("data/angsd/lowcov_6x/lowcov_6x_andro.{chrom}.glf.gz", chrom = CHROM)
 #         ngsF = "data/angsd/lowcov_6x/lowcov_6x_andro.run1.approx_indF",
 #         ngsF_deep = "data/angsd/lowcov_6x/lowcov_6x_andro.run1.indF",
 #         saf = expand("data/angsd/saf/lowcov_6x_andro.{chrom}.50per.saf.gz", chrom = CHROM),
-#         sfs = expand("data/angsd/saf/lowcov_6x_andro.{chrom}.50per.sfs", chrom = CHROM),
-#         thetas = expand("data/angsd/saf/lowcov_6x_andro.{chrom}.{window}.thetas.idx.pestPG", chrom = CHROM, window = WINDOW)
+         saf = expand("data/angsd/saf/{pops}.{chrom}.50per.saf.gz", chrom = CHROM, pops = POPS),
+#         sfs = expand("data/angsd/saf/{pops}.{chrom}.sfs", chrom = CHROM, pops = POPS),
+#         thetas = expand("data/angsd/theta/{pops}.{chrom}.{window}.thetas.idx.pestPG", chrom = CHROM, window = WINDOW, pops = POPS)
         ## Aneuploidy
 #         cov = expand("data/bedtools/coverage/{bam}.1Mb.cov.txt", bam = BAM)
 
