@@ -38,12 +38,12 @@ rule bwa_map:
         ref = config.ref,
 #        r1 = "/group/jrigrp10/andropogon_shortreads/{sample}_1.fq.gz",
 #        r2 = "/group/jrigrp10/andropogon_shortreads/{sample}_2.fq.gz"
-#        r1 = "/group/jrigrp10/andropogon_shortreads/{sample}.merge.R1.fastq.gz",
-#        r2 = "/group/jrigrp10/andropogon_shortreads/{sample}.merge.R2.fastq.gz"
+        r1 = "/group/jrigrp10/andropogon_shortreads/{sample}.merge.R1.fastq.gz",
+        r2 = "/group/jrigrp10/andropogon_shortreads/{sample}.merge.R2.fastq.gz"
 #        r1 = "/group/jrigrp10/andropogon_shortreads/ucd_seq/{sample}_R1_001.fastq.gz",
 #        r2 = "/group/jrigrp10/andropogon_shortreads/ucd_seq/{sample}_R2_001.fastq.gz"
-        r1 = "data/raw/trimmed/{sample}.trim_1.fastq.gz",
-        r2 = "data/raw/trimmed/{sample}.trim_2.fastq.gz"
+#        r1 = "data/raw/trimmed/{sample}.trim_1.fastq.gz",
+#        r2 = "data/raw/trimmed/{sample}.trim_2.fastq.gz"
     output:
         temp("data/interm/mapped_bam/{sample}.mapped.bam")
 #    log:

@@ -18,12 +18,12 @@ rule mpileup:
     input:
         ref = config.ref,
 #        bamlist = "data/final_bams/lowcov/lowcov.bamlist.txt"
-#        bamlist = "data/final_bams/highcov/highcov.bamlist.txt"
-        bamlist = "data/final_bams/lowcov/ucd.bamlist.txt"
+        bamlist = "data/final_bams/highcov/highcov.bamlist.txt"
+#        bamlist = "data/final_bams/lowcov/ucd.bamlist.txt"
     output:
 #        vcf = "data/vcf/lowcov/all.AG.lowcov.{chr}.raw.vcf.gz"
-#        vcf = "data/vcf/highcov/all.AG.highcov.{chr}.raw.vcf.gz"
-        vcf = "data/vcf/lowcov/ucd.lowcov.{chr}.raw.vcf.gz"
+        vcf = "data/vcf/highcov/all.AG.highcov.{chr}.raw.vcf.gz"
+#        vcf = "data/vcf/lowcov/ucd.lowcov.{chr}.raw.vcf.gz"
     params:
         chr = "{chr}"
     threads:

@@ -77,9 +77,9 @@ rule subsample_6x:
     input:
         bam_path = "data/final_bams/{low_geno}.bam"
     output:
-        "data/final_bams/lowcov/6x_subsample/{low_geno}_{low_per}.subsample.bam"
+        "data/final_bams/6x_subsample/{low_geno}_{low_per}.subsample.bam"
     params:
-        frac = "{low_per}",
+        frac = "{low_per}"
     shell:
         """
         samtools view -b -s {params.frac} {input.bam_path} > {output}

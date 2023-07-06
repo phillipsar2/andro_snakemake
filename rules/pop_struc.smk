@@ -147,14 +147,16 @@ rule structure:
 # (1) call genotype likelihoods with ANGSD
 
 # -doGlf 3 required for ngsF - binary 3 times likelihood (.glf.gz)
-# -minInd 21 - set the minimum number of individuals with data to 21 (20%)
 # -GL 1 - SAMtools GL model
 # -doMaf 1 - minor allele frequency is known
 # -doMajorMinor 4 - known major allele is from the reference
+# Don't specify a minimum number of individuals as it is not necessary
+
 rule call_gls:
     input:
-        bams = expand("data/final_bams/6x_subsample/{low_geno}_{low_per}.subsample.bam", zip, low_geno = LOW_GENO, low_per = LOW_PER),
-        ref = config.ref
+#        bams = expand("data/final_bams/6x_subsample/{low_geno}_{low_per}.subsample.bam", zip, low_geno = LOW_GENO, low_per = LOW_PER),
+        ref = config.ref,
+        bamlist = "data/final_bams/6x_subsample/6x_subsampled.bamlist"
     output:
         "data/angsd/lowcov_6x/lowcov_6x_andro.{chrom}.glf.gz"
     params:
@@ -167,8 +169,8 @@ rule call_gls:
         -doGlf 3 \
         -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -trim 0 -C 50 \
         -minMapQ 30 -minQ 30 \
-#        -setMinDepthInd 1 -setMaxDepthInd 6 \
-        -bam data/final_bams/6x_subsample/subsampled.bamlist \
+        -doCounts 1 -setMinDepthInd 1 -setMaxDepthInd 6 \
+        -b {input.bamlist} \
         -r {params.chrom} \
         -doMaf 1 \
         -doMajorMinor 4 \
@@ -186,20 +188,105 @@ rule call_gls:
 # --min_epsilon - Maximum RMSD between iterations to assume convergence (ideally want a value of zero)
 rule ngsF:
     input:
-        gl = "data/angsd/lowcov_6x/lowcov_6x_andro.glf.gz"
+        gl = "data/angsd/lowcov_6x/lowcov_6x_andro.all.glf"
     output:
-        "data/angsd/lowcov_6x/lowcov_6x_andro.approx_indF"
+        "data/angsd/lowcov_6x/lowcov_6x_andro.run1.approx_indF"
     shell:
         """
         ngsF \
-        --n_ind 106 \
-        --n_sites {params.sites} \
+        --n_ind 107 \
+        --n_sites 45357448 \
         --init_values r \
         --glf {input.gl} --out {output} \
         --approx_EM \
         --seed 12345 \
         --min_epsilon 1e-6
         """
-    
-    
 
+# (3) Run deep search with estimated starting values
+rule ngsF_deep:
+    input:
+        gl = "data/angsd/lowcov_6x/lowcov_6x_andro.all.glf",
+        init = "data/angsd/lowcov_6x/lowcov_6x_andro.run1.approx_indF.pars"
+    output:
+        "data/angsd/lowcov_6x/lowcov_6x_andro.run1.indF"
+    shell:
+        """
+        ngsF \
+        --n_ind 107 \
+        --n_sites 45357448 \
+        --init_values r \
+        --glf {input.gl} --out {output} \
+        --init_values {input.init} \
+        --seed 1235 \
+        --min_epsilon 1e-6 \
+        --n_threads 30 \
+        """
+    
+    
+###
+### Diversity stats
+###
+
+# (1) Estimate the global SFS 
+# -doSaf 1 estimate the SFS based on ind genotype likelihoods
+# -minInd 80 80/107 genotypes need to have the site (~75%)
+# -minInd 53 53/107 genotypes need to have the site (~50%)
+rule angsd_saf:
+    input:
+        ref = config.ref,
+        bamlist = "data/final_bams/6x_subsample/6x_subsampled.bamlist"
+#        glf = "data/angsd/lowcov_6x/lowcov_6x_andro.{chrom}.glf.gz",
+#        fai = config.fai
+    output:
+#        "data/angsd/saf/lowcov_6x_andro.{chrom}.75per.saf.gz"
+        "data/angsd/saf/lowcov_6x_andro.{chrom}.50per.saf.gz"
+    params:
+        prefix = "data/angsd/saf/lowcov_6x_andro.{chrom}.50per",
+        chrom = "{chrom}"
+    shell:
+        """
+        angsd \
+        -GL 1 -P 15 \
+        -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -trim 0 -C 50 \
+        -minMapQ 30 -minQ 30 \
+        -doCounts 1 -setMinDepthInd 1 -setMaxDepthInd 6 \
+        -b {input.bamlist} \
+        -r {params.chrom} \
+        -minInd 53 \
+        -ref {input.ref} -anc {input.ref} \
+        -doSaf 1 \
+        -out {params.prefix}
+        """
+
+## (2) Generate global estimate of SFS (site frequency spectrum) then per-site thetas
+# -fold 1 specifies the folded spectrum as I don't have an ancestral state
+# real SFS saf2theta calculates the thetas for each site
+rule pop_sfs:
+    input:
+        ref = config.ref,
+        saf = "data/angsd/saf/lowcov_6x_andro.{chrom}.50per.saf.gz",
+    output:
+        sfs = "data/angsd/saf/lowcov_6x_andro.{chrom}.50per.sfs"
+    params:
+        prefix = "data/angsd/saf/lowcov_6x_andro.{chrom}.50per"
+    run:
+        shell("realSFS {params.prefix}.saf.idx  -P 10 -fold 1 > {params.prefix}.sfs")
+        shell("realSFS saf2theta {params.prefix}.saf.idx -sfs {params.prefix}.sfs -outname {params.prefix}")
+
+# (3) calculate thetas (and neutrality tests) in 10k sliding windows
+### when using a folded SFS, only thetaW (tW), thetaD (tP), and tajimasD will be meaningful in the output of realSFS
+rule pop_pi:
+    input:
+        sfs = "data/angsd/saf/lowcov_6x_andro.{chrom}.75per.sfs"
+    output:
+        stats = "data/angsd/saf/lowcov_6x_andro.{chrom}.{window}.thetas.idx.pestPG"
+    params:
+        prefix = "data/angsd/saf/lowcov_6x_andro.{chrom}.{window}.75per",
+        win = "{window}"
+    run:
+        shell("thetaStat do_stat {params.prefix}.thetas.idx \
+        -win {params.win} \
+        -step {params.win}")
+       # merge the files
+#        shell("cat <(cat *.thetas.idx.pestPG | head -n1) <(cat *.thetas.idx.pestPG | grep -v nSites) > all.boulder.thetas.idx.pestPG")

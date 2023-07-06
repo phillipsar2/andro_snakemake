@@ -2,14 +2,14 @@ import config
 import pandas as pd
 
 # Different SAMPLE names
-#SAMPLE = glob_wildcards("/group/jrigrp10/andropogon_shortreads/{sample}.merge.R1.fastq.gz").sample
+SAMPLE = glob_wildcards("/group/jrigrp10/andropogon_shortreads/{sample}.merge.R1.fastq.gz").sample
 #SAMPLE = glob_wildcards("/group/jrigrp10/andropogon_shortreads/{sample}_1.fq.gz").sample
-SAMPLE = glob_wildcards("/group/jrigrp10/andropogon_shortreads/ucd_seq/{sample}_R1_001.fastq.gz").sample
+#SAMPLE = glob_wildcards("/group/jrigrp10/andropogon_shortreads/ucd_seq/{sample}_R1_001.fastq.gz").sample
 #print(SAMPLE)
 
 # BAM names encompass all samples regardless of their fastq pattern
-#BAM = glob_wildcards("data/interm/mark_dups/{bam}.dedup.bam").bam
-BAM = glob_wildcards("data/final_bams/lowcov/{bam}.dedup.bam").bam
+BAM = glob_wildcards("data/interm/mark_dups/{bam}.dedup.bam").bam
+#BAM = glob_wildcards("data/final_bams/lowcov/{bam}.dedup.bam").bam
 #BAM = glob_wildcards("data/final_bams/highcov/{bam}.dedup.bam").bam
 #print(BAM)
 
@@ -23,14 +23,14 @@ GENO = list(file.Genotype)
 HIGH = glob_wildcards("data/interm/mark_dups/IN{high}.dedup.bam").high
 
 # LOW_SUB contains the lowcov processed bams that need to be subsampled to even lower coverage
-filebp = pd.read_csv("6x_bams_to_subset.tsv", sep = "\t", header = 0)
-#fileb = pd.read_csv("6x_bams_to_subset_bams.tsv", sep = "\t", header = 0)
-#LOW_GENO = filebp.bam.str.split(pat="/", expand=True)[7].astype(str).tolist()
-lg_temp = filebp.bam.str.split(pat="/", expand=True)[6] + "/" + filebp.bam.str.split(pat="/", expand=True)[7]
-LOW_GENO = lg_temp.tolist()
+#filebp = pd.read_csv("6x_bams_to_subset.tsv", sep = "\t", header = 0)
+#lg_temp = filebp.bam.str.split(pat="/",expand=True)[7]+ "/" + filebp.bam.str.split(pat="/", expand=True)[8]
+#LOW_GENO = lg_temp.tolist()
+#print(LOW_GENO)
+#LOW_PER = list(filebp.fraction)
 
-#filef = pd.read_csv("6x_bams_to_subset_frac.tsv", sep = "\t", header = 0)
-LOW_PER = list(filebp.fraction)
+LOW_GENO = ["highcov/INDB_PCRfree_4-1-McKain_WI-Diversity_45_TAATACAG_Andropogon_gerardii.dedup", "highcov/INDN_PCRfree_5-3-McKain_254-WI-Diversity_46_ATATGGAT_Andropogon_gerardii.dedup", "highcov/INEH_PCRfree_Loretta_SAL-1_2_AGTACTCC_Andropogon_gerardii.dedup", "highcov/INDZ_PCRfree_Loretta_FUL-5_35_GATCTATC_Andropogon_gerardii.dedup"]
+LOW_PER = ["0.03657470567","0.02253749676","0.02095579375", "0.04940638232"]
 
 # filep contains the bams nQuire was run on to determine ploidy
 filep = pd.read_csv("bams_nquire.csv", sep = "\t", header = None)
@@ -63,13 +63,16 @@ miss = ["20"]
 CYT = ["6x"]
 
 # number of admixture groups (k) - for 14 groups do range(15))
-K = list(range(2,25))
+K = list(range(2,22))
 
 # which chain are we currently running for entropy?
 CHAIN = ["1"]
 
 # which run are we currently sampling for single read genotyping?
 RUN = ["1","2"]
+
+# window size for theta estimation
+WINDOW = ["10000", "50000"]
 
 # Rule all describes the final output of the pipeline
 rule all:
@@ -119,18 +122,23 @@ rule all:
 #         kin_sub = "data/kinship/lowcov/all.andro.lowcov.miss20.min2.100k.run1.ibs.txt"
         ## STRUCTURE
 #         structure = expand("data/structure/cg.lowcov.50k.k{k}.run{run}.75steps.structure_output.txt_f", run = RUN, k = K)
-#         structure = expand("data/structure/al.andro.lowcov.100k.k{k}.run{run}.75steps.structure_output.txt_f", run = RUN, k = K)
+#         structure = expand("data/structure/all.andro.lowcov.100k.k{k}.run{run}.75steps.structure_output.txt_f", run = RUN, k = K)
+#         structure = expand("data/structure/noinbreds.andro.lowcov.100k.k{k}.run{run}.75steps.structure_output.txt_f", run = RUN, k = K),
         ## Diversity stats
-#          subsample_6x = expand("data/final_bams/lowcov/6x_subsample/{low_geno}_{low_per}.subsample.bam", zip, low_geno = LOW_GENO, low_per = LOW_PER)
+         subsample_6x = expand("data/final_bams/6x_subsample/{low_geno}_{low_per}.subsample.bam", zip, low_geno = LOW_GENO, low_per = LOW_PER),
 #         qualimap = expand("reports/bamqc/subsampled/{low_geno}_{low_per}_stats/genome_results.txt", zip, low_geno = LOW_GENO, low_per = LOW_PER),
-          gls =  expand("data/angsd/lowcov_6x/lowcov_6x_andro.{chrom}.glf.gz", chrom = CHROM)
-#         ngsF = "data/angsd/lowcov_6x/lowcov_6x_andro.approx_indF"
+#         gls =  expand("data/angsd/lowcov_6x/lowcov_6x_andro.{chrom}.glf.gz", chrom = CHROM)
+#         ngsF = "data/angsd/lowcov_6x/lowcov_6x_andro.run1.approx_indF",
+#         ngsF_deep = "data/angsd/lowcov_6x/lowcov_6x_andro.run1.indF",
+#         saf = expand("data/angsd/saf/lowcov_6x_andro.{chrom}.50per.saf.gz", chrom = CHROM),
+#         sfs = expand("data/angsd/saf/lowcov_6x_andro.{chrom}.50per.sfs", chrom = CHROM),
+#         thetas = expand("data/angsd/saf/lowcov_6x_andro.{chrom}.{window}.thetas.idx.pestPG", chrom = CHROM, window = WINDOW)
         ## Aneuploidy
 #         cov = expand("data/bedtools/coverage/{bam}.1Mb.cov.txt", bam = BAM)
 
 ## Rules
 #include: "rules/mapping.smk"
-#include: "rules/process_bam.smk"
+include: "rules/process_bam.smk"
 #include: "rules/aneuploidy.smk"
 #include: "rules/determine_ploidy.smk"
 #include: "rules/calling.smk"

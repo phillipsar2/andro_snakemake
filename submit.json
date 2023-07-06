@@ -2,18 +2,18 @@
     "__default__" :
     {
       "p" : "high2",
-      "mem" : "8G",
+      "mem" : "4G",
       "time" : "10-00:00",
       "name": "rando",
 #      "name": "{rule}_{wildcards}",
 #      "o": "slurm_out/{rule}_{wildcards}.%j.out",
-      "cpus-per-task": 4
+      "cpus-per-task": 2,
     },
     "bwa_map" :
     {
-      "mem": "32G",
+      "mem": "64G",
 # typically 64 or 32
-      "p" : "bigmemm",
+      "p" : "high2",
       "time" : "30-00:00",
       "name" : "bwa_map",
       "cpus-per-task": 8,
@@ -21,8 +21,8 @@
     },
     "samtools_sort" :
     {
-      "p" : "bigmemm",
-      "mem" : "32G",
+      "p" : "high2",
+      "mem" : "48G",
 # typically 32 or 48
       "time" : "7-00:00",
       "name " : "samtools_sort",
@@ -30,7 +30,7 @@
     },
     "mark_dups" :
     {
-      "p" : "bigmemm",
+      "p" : "high2",
       "mem" : "40G",
       "time" : "7-00:00",
       "name" : "mark_dups",
@@ -112,9 +112,37 @@
     },
     "call_gls" :
     {
-      "mem": "32G",
+      "mem": "80G",
       "p" : "high2",
       "time" : "30-00:00",
       "name" : "call_gls",
+    },
+    "ngsF" :
+    {
+      "mem": "150G",
+      "p" : "high2",
+      "time" : "30-00:00",
+      "name" : "ngsF",
+    },
+    "ngsF_deep" :
+    {
+      "mem": "150G",
+      "p" : "high2",
+      "time" : "30-00:00",
+      "name" : "ngsF",
+    },
+    "angsd_saf" :
+    {
+      "mem": "54G",
+      "p" : "high2",
+      "time" : "30-00:00",
+      "name" : "saf",
+    },
+    "pop_sfs" :
+    {
+      "mem": "54G",
+      "p" : "high2",
+      "time" : "30-00:00",
+      "name" : "pop_sfs",
     }
 }
