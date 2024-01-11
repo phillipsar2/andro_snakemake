@@ -263,26 +263,55 @@ rule pop_sfs:
         ref = config.ref,
         saf = "data/angsd/saf/{pops}.{chrom}.50per.saf.gz",
     output:
-        sfs = temp("data/angsd/saf/{pops}.{chrom}.sfs")
+        sfs = "data/angsd/saf/{pops}.{chrom}.sfs"
     params:
-        prefix = "data/angsd/saf/{pops}.{chrom}"
-    run:
-        shell("realSFS {params.prefix}.saf.idx  -P 10 -fold 1 > {params.prefix}.sfs")
-        shell("realSFS saf2theta {params.prefix}.saf.idx -sfs {params.prefix}.sfs -outname {params.prefix}")
+        prefix = "{pops}.{chrom}"
+    shell:
+        """
+        realSFS data/angsd/saf/{params.prefix}.50per.saf.idx  -P 10 -fold 1 > data/angsd/saf/{params.prefix}.sfs
+#        realSFS saf2theta data/angsd/saf/{params.prefix}.saf.idx -sfs {params.prefix}.sfs -outname data/angsd/saf/{params.prefix}
+        """
 
 # (3) calculate thetas (and neutrality tests) in 10k sliding windows
 ### when using a folded SFS, only thetaW (tW), thetaD (tP), and tajimasD will be meaningful in the output of realSFS
 rule pop_pi:
     input:
-        sfs = "data/angsd/saf/{pops}.{chrom}.sfs"
+        sfs = "data/angsd/saf/{pops}.{chrom}.sfs",
+        saf = "data/angsd/saf/{pops}.{chrom}.50per.saf.idx"
     output:
-        stats = "data/angsd/theta/{pops}.{chrom}.{window}.thetas.idx.pestPG"
+        stats = "data/angsd/saf/{pops}.{chrom}.{window}.thetas.idx.pestPG"
     params:
-        prefix = "data/angsd/theta/{pops}.{chrom}.{window}",
+        prefix = "data/angsd/saf/{pops}.{chrom}.{window}",
         win = "{window}"
-    run:
-        shell("thetaStat do_stat {params.prefix}.thetas.idx \
-        -win {params.win} \
-        -step {params.win}")
+    shell:
+        """
+        realSFS saf2theta {input.saf} -sfs {input.sfs} -outname {params.prefix}
+        if test -s {params.prefix}.thetas.idx; \
+        then \
+            thetaStat do_stat {params.prefix}.thetas.idx -win {params.win} -step {params.win}; \
+        else \
+            touch {output}; \
+        fi
+#        thetaStat do_stat {params.prefix}.thetas.idx \
+#        -win {params.win} \
+#        -step {params.win}
+#        if test -f {params.prefix}.thetas.idx; then echo "idx exists"; else touch {output}; fi
+        """
        # merge the files
 #        shell("cat <(cat *.thetas.idx.pestPG | head -n1) <(cat *.thetas.idx.pestPG | grep -v nSites) > all.boulder.thetas.idx.pestPG")
+
+
+## (4) Merge the theta estimates
+rule merge_pi:
+    input:
+        expand("data/angsd/saf/{pops}.{chrom}.{window}.thetas.idx.pestPG", pops = POPS, chrom = CHROM, window = WINDOW)
+    output:
+        "data/angsd/saf/{pops}.all.{window}.thetas.idx.pestPG.gz"
+    params:
+        "data/angsd/saf/{pops}.all.{window}.thetas.idx.pestPG"
+    shell:
+        """
+        cat <(cat data/angsd/saf/{wildcards.pops}.*.{wildcards.window}.thetas.idx.pestPG| head -n1 | cut -f 1,2,4,5,9,14 ) \
+        <(cat data/angsd/saf/{wildcards.pops}.*.{wildcards.window}.thetas.idx.pestPG | grep -v nSites | cut -f 1,2,4,5,9,14 | awk '$6 != 0') | \
+        gzip > {output}
+        """

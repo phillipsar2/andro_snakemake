@@ -87,10 +87,10 @@ probability of sharing an allele IBD with yourself.
 - average coverage was calculated in 1 Mbp windows across the genome for each genotype using `bedtools coverage`
 -- Coverage was not calculated for the following genotypes due to data quality:`AN20N023`,`AN20NSCR000363`,`AN20NSCR000409`
 
-
 ## 11. Thetas
 - Estiamted only in the 6x genotypes utilizing the subsampled bams.
-- The SAF, SFS, and thetas were estimate for (1) each population with more than 3 genotypes and (2) the West and East genetic group.
+- The SAF, SFS, and thetas were estimated for (1) each population with more than 3 genotypes and (2) the West and East\
+genetic group. Populations with more than 3 genotypes were randomly subsampled to 3. The West and East groups were run will their full sample sizes.
 
 # ---- Other ----
 

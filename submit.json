@@ -113,36 +113,43 @@
     "call_gls" :
     {
       "mem": "80G",
-      "p" : "high2",
+      "p" : "med2",
       "time" : "30-00:00",
       "name" : "call_gls",
     },
     "ngsF" :
     {
-      "mem": "150G",
-      "p" : "high2",
+      "mem": "12G",
+      "p" : "med2",
       "time" : "30-00:00",
       "name" : "ngsF",
     },
     "ngsF_deep" :
     {
-      "mem": "150G",
-      "p" : "high2",
+      "mem": "16G",
+      "p" : "med2",
       "time" : "30-00:00",
       "name" : "ngsF",
     },
     "angsd_saf" :
     {
-      "mem": "54G",
+      "mem": "16G",
       "p" : "high2",
       "time" : "30-00:00",
       "name" : "saf",
     },
     "pop_sfs" :
     {
-      "mem": "54G",
+      "mem": "2G",
       "p" : "high2",
       "time" : "30-00:00",
       "name" : "pop_sfs",
+    },
+    "pop_pi" :
+    {
+      "mem": "2G",
+      "p" : "high2",
+      "time" : "30-00:00",
+      "name" : "pop_pi",
     }
 }
