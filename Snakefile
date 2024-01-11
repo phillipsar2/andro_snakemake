@@ -44,6 +44,9 @@ UNKNOWN = list(filep[0])
 # List of all chromsomes
 chr = pd.read_csv(config.contig_list, header = None)
 CHROM = list(chr[0])
+## for ngsF_deep (specific scaffolds)
+CHROM_AVAIL = glob_wildcards("data/angsd/highcov_6x/highcov_6x_andro.{chrom_avail}.run1.approx_indF").chrom_avail
+print(CHROM_AVAIL)
 ## low cov scaffolds w sites not filtered out (some lost entirely)
 #CHROM = ["Chr01A","Chr01B","Chr01C","Chr02A","Chr02B","Chr02C","Chr03A","Chr03B","Chr03C","Chr04A","Chr04B","Chr04C","Chr05A","Chr05B","Chr05C","Chr06A","Chr06B","Chr06B","Chr06C","Chr07A","Chr07B","Chr07C","Chr08A","Chr08C","Chr08B","Chr09A","Chr09B","Chr09C","Chr10A","Chr10B","Chr10C","scaffold_144","scaffold_163","scaffold_32","scaffold_490","scaffold_542","scaffold_965"]
 ## high cov scaffolds w sites not filtered out (some lost entirely)
@@ -68,8 +71,8 @@ K = list(range(2,22))
 # which chain are we currently running for entropy?
 CHAIN = ["1"]
 
-# which run are we currently sampling for single read genotyping?
-RUN = ["1","2"]
+# Run for ngsF (3 total)
+RUN = ["2","3"]
 
 # Population IDs for theta estimateion
 POPS = ["AFT", "AUS","BAR","BOU","CDB","CUI","DES","ESL","FUL","KEN","KON","MAN","MIL","REL","SAL","SUT","TWE","WAL","WEB"]
@@ -131,22 +134,24 @@ rule all:
         ## Diversity stats
 #         subsample_6x = expand("data/final_bams/6x_subsample/{low_geno}_{low_per}.subsample.bam", zip, low_geno = LOW_GENO, low_per = LOW_PER),
 #         qualimap = expand("reports/bamqc/subsampled/{low_geno}_{low_per}_stats/genome_results.txt", zip, low_geno = LOW_GENO, low_per = LOW_PER),
-#         gls =  expand("data/angsd/lowcov_6x/lowcov_6x_andro.{chrom}.glf.gz", chrom = CHROM)
-#         ngsF = "data/angsd/lowcov_6x/lowcov_6x_andro.run1.approx_indF",
-#         ngsF_deep = "data/angsd/lowcov_6x/lowcov_6x_andro.run1.indF",
+#         gls =  expand("data/angsd/highcov_6x/highcov_6x_andro.{chrom}.glf.gz", chrom = CHROM),
+#         ngsF = expand("data/angsd/highcov_6x/highcov_6x_andro.{chrom}.run{run}.approx_indF", chrom = CHROM, run = RUN),
+         ngsF_deep = expand("data/angsd/highcov_6x/highcov_6x_andro.{chrom_avail}.run{run}.indF", chrom_avail = CHROM_AVAIL, run = RUN)
 #         saf = expand("data/angsd/saf/lowcov_6x_andro.{chrom}.50per.saf.gz", chrom = CHROM),
-         saf = expand("data/angsd/saf/{pops}.{chrom}.50per.saf.gz", chrom = CHROM, pops = POPS),
+#         saf = expand("data/angsd/saf/{pops}.{chrom}.50per.saf.gz", chrom = CHROM, pops = POPS),
 #         sfs = expand("data/angsd/saf/{pops}.{chrom}.sfs", chrom = CHROM, pops = POPS),
-#         thetas = expand("data/angsd/theta/{pops}.{chrom}.{window}.thetas.idx.pestPG", chrom = CHROM, window = WINDOW, pops = POPS)
+#         thetas = expand("data/angsd/saf/{pops}.{chrom}.{window}.thetas.idx.pestPG", chrom = CHROM, window = WINDOW, pops = POPS)
+#         merge_thetas = expand("data/angsd/saf/{pops}.all.{window}.thetas.idx.pestPG.gz", pops = POPS, window = WINDOW)
         ## Aneuploidy
 #         cov = expand("data/bedtools/coverage/{bam}.1Mb.cov.txt", bam = BAM)
 
 ## Rules
 #include: "rules/mapping.smk"
-include: "rules/process_bam.smk"
+#include: "rules/process_bam.smk"
 #include: "rules/aneuploidy.smk"
 #include: "rules/determine_ploidy.smk"
 #include: "rules/calling.smk"
 #include: "rules/filtering.smk"
 #include: "rules/gl_calling.smk"
-include: "rules/pop_struc.smk"
+#include: "rules/pop_struc.smk"
+include: "rules/pop_struc_highcov.smk"
