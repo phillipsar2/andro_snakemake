@@ -14,3 +14,12 @@
 `bigblue_thetas.R` -- Calculate per-site values of thetas estimated by ANGSD
 `singleread_pca.R` -- Plot single read PCA
 `kinship_matrix.R` -- Calculate and plot kinship matrix
+
+## Common garden
+`GDD_Calculations.R` -- Daymetr calcualtions of growing degree days at 10 degrees C
+`androclimatena.R`-- Extracing ClimateNA data
+`heritability.R` -- Estimate narrow-sense heritability for each trait with MegaLMM
+`traits_pca.R` -- Run PCA on standarized traits
+`gmatrix.R` -- Estimate G matrix with MegaLMM
+`linear_mod_all.R` -- linear mixed models (Model 1 and 2)
+`transfer_distance.R` -- Estimate effect of transfer distance on growth

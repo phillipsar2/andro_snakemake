@@ -17,11 +17,11 @@ The majority of the methods are encapsulated in a [Snakemake](https://snakemake.
 |   ├── pop_struc_highcov.smk   
 |   └─  ─ procesam.smk   
 ├─   environment.yml   
-├─   sscripts   
-│   ├──allelebalance_filter.sh   
-│   ├─allelebalance_filter.R   
-│   ├── process_trees.R <- Script for tree figures.   
-│   └── poa_pca_pi.R <- Script for PCA and pi figures.    
+├─  sscripts   
+│   ├── README.md
+│   ├ filtering   
+│   ── common_garden
+│  └──pgen
 ├── data   
 │   ├── raw <- The original WGS data dump.   
 │   ├── interm  <- Intermediate data that has been transformed.   
