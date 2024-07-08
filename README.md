@@ -13,11 +13,11 @@ The majority of the methods are encapsulated in a [Snakemake](https://snakemake.
 |   ├── determine_ploidy.smk
 |   ├── filtering.smk
 |   ├── mapping.smk
-|   ├──    pop_struc.smk
-|   ├──    pop_struc_highcov.smk   
-|   └── procesam.smk   
-├─environment.yml   
-├── scripts   
+|   ├── pop_struc.smk
+|   ├── pop_struc_highcov.smk   
+|   └─  ─ procesam.smk   
+├─   environment.yml   
+├─   sscripts   
 │   ├──allelebalance_filter.sh   
 │   ├─allelebalance_filter.R   
 │   ├── process_trees.R <- Script for tree figures.   
