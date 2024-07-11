@@ -45,13 +45,13 @@ rule PCA_single:
         # All sites with 20% missing data cutoff - 3/7/2024
 #         sites = "data/angsd/lowcov/lowcov.all.miss20.positions"
     output:
-#        "data/pca/lowcov/all.andro.lowcov.50k.ibs.gz"
-#        "data/pca/lowcov/cg.andro.lowcov.50k.ibs.gz"
-         "data/pca/lowcov/all.andro.lowcov.miss20.100k.covMat"
+#        "data/angsd/pca/lowcov/all.andro.lowcov.50k.ibs.gz"
+#        "data/angsd/pca/lowcov/cg.andro.lowcov.50k.ibs.gz"
+         "data/angsd/pca/lowcov/all.andro.lowcov.miss20.100k.covMat"
     params:
-#        prefix = "data/pca/lowcov/all.andro.lowcov.50k"
-#        prefix = "data/pca/lowcov/cg.lowcov.50k"
-         prefix = "data/pca/lowcov/all.andro.lowcov.miss20.100k"
+#        prefix = "data/angsd/pca/lowcov/all.andro.lowcov.50k"
+#        prefix = "data/angsd/pca/lowcov/cg.lowcov.50k"
+         prefix = "data/angsd/pca/lowcov/all.andro.lowcov.miss20.100k"
     run:
         shell("angsd \
         -sites {input.sites} \
@@ -78,9 +78,9 @@ rule cg_ibs:
         bamlist = "data/final_bams/lowcov/commongarden.bamlist",
         sites = "data/angsd/lowcov/lowcov.all.miss20.positions"
     output:
-        "data/pca/lowcov/cg.andro.lowcov.nomiss.ibs.gz"
+        "data/angsd/pca/lowcov/cg.andro.lowcov.nomiss.ibs.gz"
     params:
-        prefix = "data/pca/lowcov/cg.andro.lowcov.nomiss"
+        prefix = "data/angsd/pca/lowcov/cg.andro.lowcov.nomiss"
     run:
         shell("angsd \
         -sites {input.sites} \
@@ -105,9 +105,9 @@ rule all_ibs:
         # all sites with less than 20% missing data
         sites = "data/angsd/lowcov/lowcov.all.miss20.positions"
     output:
-        "data/pca/lowcov/all.andro.lowcov.all.miss20.ibs.gz"
+        "data/angsd/pca/lowcov/all.andro.lowcov.all.miss20.ibs.gz"
     params:
-        prefix = "data/pca/lowcov/all.andro.lowcov.all.miss20"
+        prefix = "data/angsd/pca/lowcov/all.andro.lowcov.all.miss20"
     run:
         shell("angsd \
         -sites {input.sites} \

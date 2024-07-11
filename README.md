@@ -7,33 +7,36 @@ The majority of the methods are encapsulated in a [Snakemake](https://snakemake.
 ## Project organization
 <pre>
 ├── README.md <- The top-level README.md for Andropogon or polyploidy enthusiasts that want to replicate these analyses.   
-├── rules    
-|   ├── angsd.smk   
+├── rules
+|   ├── angsd.smk
 |   ├── calling.smk
 |   ├── determine_ploidy.smk
 |   ├── filtering.smk
 |   ├── mapping.smk
 |   ├── pop_struc.smk
-|   ├── pop_struc_highcov.smk   
-|   └─  ─ procesam.smk   
-├─   environment.yml   
-├─  sscripts   
+|   ├── pop_struc_highcov.smk
+|   └── procesam.smk
+├─  environment.yml 
+├─  scripts
 │   ├── README.md
-│   ├ filtering   
-│   ── common_garden
-│  └──pgen
-├── data   
-│   ├── raw <- The original WGS data dump.   
-│   ├── interm  <- Intermediate data that has been transformed.   
-│   ├── processed <- The final datasets.
-│   ├── vcf <- The unfiltered vcfs.   
-│   ├── gene <- Genes downloaded from NCBI for phylogenetic analyses.    
-│   └── genome <- The reference genome.   
-├── reports <- Generated analyses as HTML, PDF, or .txt.    
-├── Snakefile   
-├── config.py   
-├── submit.json   
-└── submit.sh   
+│   ├── filtering
+│   ├── common_garden
+│   └── popgen
+├── data <- each subfolder has a similar structure as angsd
+│   ├── angsd <- intermediate and final files for analyses run with ANGSD
+│   |	├── 6x_subsample <- files related to only 6x samples
+│   |   ├── highcov <- files related to all high-coverage samples
+│   |   └── lowcov <- files related to all low-coverage samples
+│   ├── final_bams <- merged, deduplicated bam files with known ploidy
+│   ├── genome <- reference genome
+│   ├── interm  <- intermediate files in read mapping and SNP calling
+│   ├── nQuire
+│   └── structure
+├── reports <- Generated analyses as HTML, PDF, or .txt.
+├── Snakefile
+├── config.py
+├── submit.json
+└── submit.sh
 </pre>
 
 
@@ -45,7 +48,7 @@ For more details, see the publication.
 - reads from different lanes were merged into a single file (JGI individuals)
 - pair-end reads were aligned with bwa-mem2/2.0
 
-## 2. Post-alignment processing
+### 2. Post-alignment processing
 - BAMs were sorted, read groups were added, and duplicates were marked with GATK and samtools
 - Low-coverage (< 5X) BAMs from the same genotype were merged together (PanAnd & UCD) with samtools merge and read groups were re-added with gatk. Bams that were merged together were moved to the folder data/interm/raw-unmerged
 - Low quality individuals (< 0.5X) were removed from the low-coverage data set and moved into the data/interm/low-coverage folder
@@ -53,14 +56,14 @@ For more details, see the publication.
 - All remaining low-coverage bams (PanAnd & UCD) that were not discarded were moved to `data/final_bams/lowcov`
 - All remaining high-coverage bams (JGI) that were not discarded were moved to `data/final_bams/highcov`
 
-## 3. Determine ploidy
+### 3. Determine ploidy
 - nQuire was utilized to determine ploidy for all high-coverage Andropogon individuals. \
 I attempted to cluster the normalized maximum log-likelihood with mclust5 in R but it identified 8 and 9 clusters. \
 Instead, I plotted the normalized values and colored the points but known/unknown ploidy to identify groups. \
 Scripts are local in `~/Andropogon/nQuire`. Ploidy was identified for 16 of 17 unknown individuals.
 - If genome size could not be determined or inferred for an individual, the bam was moved to the folder data/interm/unknown-ploidy
 
-## 4. Identify good sites in SNP filtering
+### 4. Identify good sites in SNP filtering
 - Genotypes are called with bcftools mpileup & bcftools call for 2 sets of individuals: all high coverage (JGI) and all low covera$
 - SNPs are extracted using GATK. VCFs are converted to table format with GATK to examine quality distributions and set hard filter$
     -Low coverage SNPs (unfiltered): 463,763,393
@@ -75,12 +78,12 @@ Scripts are local in `~/Andropogon/nQuire`. Ploidy was identified for 16 of 17 u
     - Lowcov (all): 11,707,655
     - Highcov: 102,242,020
 
-## 5. Single-read genotypes (low-coverage only)
+### 5. Single-read genotypes (low-coverage only)
 - Single-read genotypes were extracted using ANGSD for all 11,707,655 positions
 - 50k SNPs were randomly selected using shuf
 
-## 6. PCA
-### High cov SNPs:
+### 6. PCA
+#### High cov SNPs:
 - ANGSD was utilized to estimate GLs and then run a PCA (PCangsd) as all individuals are 6x
 - Genotype likelihoods were estimated directly from the BAMs using the Samtools method (`-GL 1`) assuming the reference allele is the major allele.
 - Reads with multiple best hits (`-uniqueOnly 1`) and flags above 255 (`-remove_bads 1`) were removed and only proper pairs were included.
@@ -90,14 +93,14 @@ and a total sequencing depth below 8 and above 70 (`-doCounts 1 -setMinDepthInd 
 - 30K sites were randomly grabbed from the beagle file using shuf.
 - The PCA was ran with PCangsd using default settings. The PCA was plotted in R with ggplot2.
 
-### Low cov SNPs:
+#### Low cov SNPs:
 - The 50k SNPs with single-read genotypes were used to run a PCA in ANGSD. Single-read gentoypes are ploidy-neutral.
     - PCA was also run with 20k random SNPs.
     - I should run multiple iterations of the 50k SNPs PCA
 - Results of the PCA were plotted with a custom script in R.
 - Seperate PCAs were ran for the CG and All Andropogon
 
-## 7. Kinship matrix
+### 7. Kinship matrix
 - A single read was randomly sampled (`-doIBS`) for each sites with < 20% missing data. Then, 50k (CG) or 100k (All Andro) random SNPs were \
 selected for the kinship matrix.
 - The single-read genotypes were used to estimate the kinshp matrix in a custom script (`kinship_matrix.R`)
@@ -106,50 +109,21 @@ twice at each site and both draws were used to calculate inbreeding (the probabi
 the reads twice, I randomly selected the same set of 100k sites from both runs. These 100k snps were used to calculate inbreeding as the \
 probability of sharing an allele IBD with yourself.
 
-## 8. STRUCTURE
-### Common garden individuals:
-- 50k random SNPs with < 20% missing data were used for STRUCTURE
-
-### All individuals
+### 8. STRUCTURE
 - 100k random SNPs with < 20% missing data used for STRUCTURE
 
-## 9. Inbreeding coefficient (Fis)
+### 9. Inbreeding coefficient (Fis)
 - Estimated only in the 6x genotypes with high coverage data using `ngsF` from ngstools.
 - Genotype likelihoods were estimated and SNPs were called in ANGSD using the above SNP filtering criteria.
 - Approximate values were generated independtly 3 times and final values were run 3 times using the approximate values as priors.
 
-## 10. Aneuploidy detection (for Kirk)
-- lowcov BAM files were converted to bed files using `bedtools bamtobed`
-- average coverage was calculated in 1 Mbp windows across the genome for each genotype using `bedtools coverage`
--- Coverage was not calculated for the following genotypes due to data quality:`AN20N023`,`AN20NSCR000363`,`AN20NSCR000409`
-
-## 11. Thetas
+### 10. Thetas
 - Estiamted only in the 6x genotypes utilizing the subsampled bams.
 - The SAF, SFS, and thetas were estimated for (1) each population with more than 3 genotypes and (2) the West and East\
 genetic group. Populations with more than 3 genotypes were randomly subsampled to 3. The West and East groups were run will their full sample sizes.
 
-# ---- Other ----
 
-
-#6 Estimating genotype probabilities
-##Low coverage SNPs:
-- The vcfs are split by ploidy using bcftools view
-- Using a custom R script that utilizes vcfR (scripts/vcf2ADmatrix.R), I extracted the matrices for total read count and alternate read count
-- I ran EBG independently on each ploidy to calculate phred-scaled genotype probabilites (1000 interactions; error = 0.01)
-- The phred-scaled genotype likelihood EBG output was converted to a matrix and the files for each ploidy were combined using a custom script (scripts/ebg2glmatrix_2ploidy.R)
-
-#8 PCA
-##High cov SNPs:
-- ANGSD was utilized to estimate GLs and then run a PCA (PCangsd) as all individuals are 6x
-- Genotype likelihoods were estimated directly from the BAMs using the Samtools method (-GL 1) assuming the reference allele is the major allele (-doMajorMinor 4). 
-- Reads with multiple best hits (-uniqueOnly 1) and flags above 255 ( -remove_bads 1) were removed and only proper pairs were included (-only_proper_pairs 1).
-- Sites with a mapping quality below 30 (-minMapQ 30), a minimum base quality score of 30 (-minQ 30), \
-and a total sequencing depth below 8 and above 70 (-doCounts 1 -setMinDepthInd 8 -setMaxDepthInd 70) were dropped. The maximum number of missing genotypes allowed at a site was 8 (-minInd 8).
-- Genotype likelihoods were output as a beagle file (-doGlf 2).
-- 30K sites were randomly grabbed from the beagle file using shuf.
-- The PCA was ran with PCangsd using default settings. The PCA was plotted in R with ggplot2.
-
-####
-# Analyses that were unsuccessful
-* ENTROPY
-* Treemix
+## Data availability
+The short-read WGS data is available on NCBI Sequence Read Archive (SRA) under BioProject PRJNA1109389.
+Supplementary data including genotype metadata, raw phenotype data, and flow cytometry data is available on [Dryad](https://doi.org/10.5061/dryad.gxd2547v1).
+The *A. gerardi* reference genome is available on Phytozome under genome IDs 784 and 783. 
