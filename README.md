@@ -19,9 +19,9 @@ The majority of the methods are encapsulated in a [Snakemake](https://snakemake.
 ├─  environment.yml 
 ├─  scripts
 │   ├── README.md
-│   ├── filtering
-│   ├── common_garden
-│   └── popgen
+│   ├── filtering <- custom scripts for variant filtering
+│   ├── common_garden <- scripts related to linear mixed models & phenotype data
+│   └── popgen <- analysis and plotting scripts for pop gen analyses
 ├── data <- each subfolder has a similar structure as angsd
 │   ├── angsd <- intermediate and final files for analyses run with ANGSD
 │   |	├── 6x_subsample <- files related to only 6x samples
@@ -33,6 +33,7 @@ The majority of the methods are encapsulated in a [Snakemake](https://snakemake.
 │   ├── nQuire
 │   └── structure
 ├── reports <- Generated analyses as HTML, PDF, or .txt.
+├── qc <- quality check output for raw data
 ├── Snakefile
 ├── config.py
 ├── submit.json
