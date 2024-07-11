@@ -1,8 +1,46 @@
-# Population genetics of  Andropogon gerardii
+# The consequences of polyploidy in adaptation of a dominant prairie grass
 
-A snakemake workflow for all of the things looking at origins of polyploidy.
+This repo details the bioinformatic methods for {doi}. 
 
-## 1. Alignment
+The majority of the methods are encapsulated in a [Snakemake](https://snakemake.readthedocs.io/en/stable/index.html) workflow, but scripts related to analysis of the common garden data and some population genetics calculations are in stand-alone R scripts.
+
+## Project organization
+<pre>
+├── README.md <- The top-level README.md for Andropogon or polyploidy enthusiasts that want to replicate these analyses.   
+├── rules    
+|   ├── angsd.smk   
+|   ├── calling.smk
+|   ├── determine_ploidy.smk
+|   ├── filtering.smk
+|   ├── mapping.smk
+|   ├── pop_struc.smk
+|   ├── pop_struc_highcov.smk   
+|   └─  ─ procesam.smk   
+├─   environment.yml   
+├─  sscripts   
+│   ├── README.md
+│   ├ filtering   
+│   ── common_garden
+│  └──pgen
+├── data   
+│   ├── raw <- The original WGS data dump.   
+│   ├── interm  <- Intermediate data that has been transformed.   
+│   ├── processed <- The final datasets.
+│   ├── vcf <- The unfiltered vcfs.   
+│   ├── gene <- Genes downloaded from NCBI for phylogenetic analyses.    
+│   └── genome <- The reference genome.   
+├── reports <- Generated analyses as HTML, PDF, or .txt.    
+├── Snakefile   
+├── config.py   
+├── submit.json   
+└── submit.sh   
+</pre>
+
+
+## Overview of the process
+For more details, see the publication.
+
+### 1. Alignment
 - Short read data was verified as A. gerardi. Any data that had mixed identiy as a different species or identified entirely as another species was not alinged.
 - reads from different lanes were merged into a single file (JGI individuals)
 - pair-end reads were aligned with bwa-mem2/2.0
