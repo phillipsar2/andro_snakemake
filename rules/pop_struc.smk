@@ -7,14 +7,14 @@ import random
 # (1) Create the sites files
 rule create_sites:
     input:
-        sites = "data/ebg/lowcov/genoliks/lowcov.merged.miss20.20k.positions",
-        vcf = "data/processed/filtered_snps_bpres/lowcov/all.AG.lowcov.merged.filtered.99.20.snps.vcf.gz"
         # Sites with a depth cutoff of 99% percentile and 20% missing data
 #        sites = "reports/filtering/depth/lowcov/all.AG.lowcov.{chrom}.filtered.nocall.0.99_0.2.txt",
 #        vcf = "data/processed/filtered_snps_bpres/lowcov/all.AG.lowcov.{chrom}.filtered.99.20.snps.vcf.gz"
+        # No clones, 20% missing data and 99% percentile
+        sites = "reports/filtering/depth/{cov}/all.AG.noclones.{cov}.{chr}.filtered.nocall.0.99_0.2.txt",
+        vcf = "data/processed/filtered_snps_bpres/{cov}/all.AG.noclones.{cov}.{chr}.filtered.nocall.vcf"
     output:
-#        sites = "data/angsd/lowcov/lowcov.merged.miss20.20k.positions"
-        sites = "data/angsd/lowcov/lowcov.{chrom}.miss20.positions"
+#        sites = "data/angsd/lowcov/lowcov.{chrom}.miss20.positions"
     shell:
         """
         bcftools query -R {input.sites} -f '%CHROM\t%POS\t%REF\t%ALT{{0}}\n' {input.vcf} > {output.sites}
@@ -35,16 +35,23 @@ rule PCA_single:
         ref = config.ref,
         # All Andro
 #        bamlist = "data/final_bams/lowcov/all.bamlist"
+         bamlist = "data/final_bams/lowcov/all.noclones.bamlist",
         # Common garden
-        bamlist = "data/final_bams/lowcov/commongarden.bamlist", 
+#        bamlist = "data/final_bams/lowcov/commongarden.bamlist", 
         #  50k random sites, 20% missing data
-        sites = "data/angsd/lowcov/lowcov.all.miss20.50k.positions.sorted"
+#        sites = "data/angsd/lowcov/lowcov.all.miss20.50k.positions.sorted"
+        # 100k random sites, 20% missing data cutoff - 3/10/2024
+         sites = "data/angsd/lowcov/lowcov.all.miss20.100k.sorted.positions"
+        # All sites with 20% missing data cutoff - 3/7/2024
+#         sites = "data/angsd/lowcov/lowcov.all.miss20.positions"
     output:
 #        "data/pca/lowcov/all.andro.lowcov.50k.ibs.gz"
-        "data/pca/lowcov/cg.andro.lowcov.50k.ibs.gz"
+#        "data/pca/lowcov/cg.andro.lowcov.50k.ibs.gz"
+         "data/pca/lowcov/all.andro.lowcov.miss20.100k.covMat"
     params:
 #        prefix = "data/pca/lowcov/all.andro.lowcov.50k"
-        prefix = "data/pca/lowcov/cg.lowcov.50k"
+#        prefix = "data/pca/lowcov/cg.lowcov.50k"
+         prefix = "data/pca/lowcov/all.andro.lowcov.miss20.100k"
     run:
         shell("angsd \
         -sites {input.sites} \
@@ -124,111 +131,31 @@ rule structure:
         ## All andropogon
 #        sites = "data/structure/all.andro.lowcov.100k.structure_input.txt",
         ## All andropogon without inbreds
-        sites = "data/structure/noinbreds.andro.lowcov.100k.structure_input.txt",
+#        sites = "data/structure/noinbreds.andro.lowcov.100k.structure_input.txt",
+        ## All andropogon without clones
+        sites = "data/structure/all.andro.noclones.lowcov.100k.2024-03-08.structure_input.txt",
         main = "data/structure/mainparams",
         extra = "data/structure/extraparams"
     output:
 #        "data/structure/cg.lowcov.50k.k{k}.run{run}.75steps.structure_output.txt_f"
 #        "data/structure/all.andro.lowcov.100k.k{k}.run{run}.75steps.structure_output.txt_f"
-        "data/structure/noinbreds.andro.lowcov.100k.k{k}.run{run}.75steps.structure_output.txt_f"
+#        "data/structure/noinbreds.andro.lowcov.100k.k{k}.run{run}.75steps.structure_output.txt_f"
+        "data/structure/all.andro.noclones.lowcov.100k.k{k}.run{run}.75steps.structure_output.txt_f"
     params:
         k = "{k}",
 #        out = "data/structure/cg.lowcov.50k.k{k}.run{run}.75steps.structure_output.txt"
 #        out = "data/structure/all.andro.lowcov.100k.k{k}.run{run}.75steps.structure_output.txt"
-        out = "data/structure/noinbreds.andro.lowcov.100k.k{k}.run{run}.75steps.structure_output.txt"
+#        out = "data/structure/noinbreds.andro.lowcov.100k.k{k}.run{run}.75steps.structure_output.txt"
+        out = "data/structure/all.andro.noclones.lowcov.100k.k{k}.run{run}.75steps.structure_output.txt"
     run:
         #module load structure-console/2.3.4
         shell("structure -m {input.main} -e {input.extra} -K {params.k} -i {input.sites} -o {params.out}")
 
 ###
-### Inbreeding in 6x
+### Thetas - 6x only
 ###
 
-# (1) call genotype likelihoods with ANGSD
-
-# -doGlf 3 required for ngsF - binary 3 times likelihood (.glf.gz)
-# -GL 1 - SAMtools GL model
-# -doMaf 1 - minor allele frequency is known
-# -doMajorMinor 4 - known major allele is from the reference
-# Don't specify a minimum number of individuals as it is not necessary
-
-rule call_gls:
-    input:
-#        bams = expand("data/final_bams/6x_subsample/{low_geno}_{low_per}.subsample.bam", zip, low_geno = LOW_GENO, low_per = LOW_PER),
-        ref = config.ref,
-        bamlist = "data/final_bams/6x_subsample/6x_subsampled.bamlist"
-    output:
-        "data/angsd/lowcov_6x/lowcov_6x_andro.{chrom}.glf.gz"
-    params:
-        prefix = "data/angsd/lowcov_6x/lowcov_6x_andro.{chrom}",
-        chrom = "{chrom}"
-    shell:
-        """
-        angsd \
-        -GL 1 -P 15 \
-        -doGlf 3 \
-        -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -trim 0 -C 50 \
-        -minMapQ 30 -minQ 30 \
-        -doCounts 1 -setMinDepthInd 1 -setMaxDepthInd 6 \
-        -b {input.bamlist} \
-        -r {params.chrom} \
-        -doMaf 1 \
-        -doMajorMinor 4 \
-        -ref {input.ref} \
-        -SNP_pval 1e-6 \
-        -out {params.prefix}
-        """
-
-# (2) Estimate inbreeding coefficient (F) with ngsF
-
-## Use approximated method first and then main EM algorithm if needed
-## Should be run multiple times to assess convergence
-
-# --init_values r - start with random intial values (recommended for low coverage)
-# --min_epsilon - Maximum RMSD between iterations to assume convergence (ideally want a value of zero)
-rule ngsF:
-    input:
-        gl = "data/angsd/lowcov_6x/lowcov_6x_andro.all.glf"
-    output:
-        "data/angsd/lowcov_6x/lowcov_6x_andro.run1.approx_indF"
-    shell:
-        """
-        ngsF \
-        --n_ind 107 \
-        --n_sites 45357448 \
-        --init_values r \
-        --glf {input.gl} --out {output} \
-        --approx_EM \
-        --seed 12345 \
-        --min_epsilon 1e-6
-        """
-
-# (3) Run deep search with estimated starting values
-rule ngsF_deep:
-    input:
-        gl = "data/angsd/lowcov_6x/lowcov_6x_andro.all.glf",
-        init = "data/angsd/lowcov_6x/lowcov_6x_andro.run1.approx_indF.pars"
-    output:
-        "data/angsd/lowcov_6x/lowcov_6x_andro.run1.indF"
-    shell:
-        """
-        ngsF \
-        --n_ind 107 \
-        --n_sites 45357448 \
-        --init_values r \
-        --glf {input.gl} --out {output} \
-        --init_values {input.init} \
-        --seed 1235 \
-        --min_epsilon 1e-6 \
-        --n_threads 30 \
-        """
-    
-    
-###
-### Diversity stats
-###
-
-# (1) Estimate the global SFS 
+# (1) Estimate the SFS for each population
 # -doSaf 1 estimate the SFS based on ind genotype likelihoods
 # -minInd 3 100% of the genotypes (n = 3) need data at the site
 rule angsd_saf:
@@ -315,3 +242,46 @@ rule merge_pi:
         <(cat data/angsd/saf/{wildcards.pops}.*.{wildcards.window}.thetas.idx.pestPG | grep -v nSites | cut -f 1,2,4,5,9,14 | awk '$6 != 0') | \
         gzip > {output}
         """
+
+###
+### Heterozygosity - 6x only
+###
+
+## (1) Estimate the folded SFS for all hexaploids range-wide
+### Heterozygosity is the second bin of the SFS
+# -minInd 106 is 20% missing data per site
+# -fold 1 estimate folded SFS
+rule all_saf:
+    input:
+        ref = config.ref,
+        bamlist = "data/final_bams/6x_subsample/bamlists/all.6x.bamlist"
+    output:
+        "data/angsd/saf/all.6x.{chrom}.saf.gz"
+    params:
+        prefix = "data/angsd/saf/{pops}.{chrom}.",
+        chrom = "{chrom}"
+    shell:
+        """
+        angsd \
+        -GL 1 -P 15 \
+        -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -trim 0 -C 50 \
+        -minMapQ 30 -minQ 30 \
+        -doCounts 1 -setMinDepthInd 1 -setMaxDepthInd 6 \
+        -b {input.bamlist} \
+        -r {params.chrom} \
+        -minInd 106
+        -ref {input.ref} -anc {input.ref} \
+        -doSaf 1 \
+        -fold 1 \
+        -out {params.prefix}
+        """
+
+rule all_sfs:
+     input:
+         "data/angsd/saf/all.6x.{chrom}.saf.idx"
+     output:
+         "data/angsd/saf/all.6x.{chrom}.est.ml"
+     shell:
+         """
+         realSFS {input} > {output}
+         """

@@ -34,7 +34,7 @@ Scripts are local in `~/Andropogon/nQuire`. Ploidy was identified for 16 of 17 u
     - Lowcov: min = 1, max = `qpois(p = 0.99)`, < 20% missing data
     - Highcov: min = 8, max = `qpois(p = 0.99)`, < 20% missing data
 - Final filtered SNP counts:
-    - Lowcov: 11,707,655
+    - Lowcov (all): 11,707,655
     - Highcov: 102,242,020
 
 ## 5. Single-read genotypes (low-coverage only)
@@ -75,14 +75,12 @@ probability of sharing an allele IBD with yourself.
 ### All individuals
 - 100k random SNPs with < 20% missing data used for STRUCTURE
 
-## 9. Inbreeding coefficient
-- Estimated only in the 6x genotypes
-- Bams were subsampled to less than 1.5X coverage, if they weren't already below that threshold, (`samtools -view -b -s`) in order to reduce\
- bias caused by coverage. Coverage percentages to subsample to are stored in `./6x_bams_to_subset.tsv`.
+## 9. Inbreeding coefficient (Fis)
+- Estimated only in the 6x genotypes with high coverage data using `ngsF` from ngstools.
 - Genotype likelihoods were estimated and SNPs were called in ANGSD using the above SNP filtering criteria.
-- Inbreeding coefficient was estimated with `ngsF` and plotted in R.
+- Approximate values were generated independtly 3 times and final values were run 3 times using the approximate values as priors.
 
-## 10. Aneuploidy detection
+## 10. Aneuploidy detection (for Kirk)
 - lowcov BAM files were converted to bed files using `bedtools bamtobed`
 - average coverage was calculated in 1 Mbp windows across the genome for each genotype using `bedtools coverage`
 -- Coverage was not calculated for the following genotypes due to data quality:`AN20N023`,`AN20NSCR000363`,`AN20NSCR000409`

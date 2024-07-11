@@ -46,12 +46,16 @@ chr = pd.read_csv(config.contig_list, header = None)
 CHROM = list(chr[0])
 ## for ngsF_deep (specific scaffolds)
 CHROM_AVAIL = glob_wildcards("data/angsd/highcov_6x/highcov_6x_andro.{chrom_avail}.run1.approx_indF").chrom_avail
-print(CHROM_AVAIL)
+#print(CHROM_AVAIL)
+## chr but no scaffolds
+CHROM_NOSCAFF = ["01A","01B","01C","02A","02B","02C","03A","03B","03C","04A","04B","04C","05A","05B","05C","06A","06B","06C","07A","07B","07C","08A","08C","08B","09A","09B","09C","10A","10B","10C"]
 ## low cov scaffolds w sites not filtered out (some lost entirely)
 #CHROM = ["Chr01A","Chr01B","Chr01C","Chr02A","Chr02B","Chr02C","Chr03A","Chr03B","Chr03C","Chr04A","Chr04B","Chr04C","Chr05A","Chr05B","Chr05C","Chr06A","Chr06B","Chr06B","Chr06C","Chr07A","Chr07B","Chr07C","Chr08A","Chr08C","Chr08B","Chr09A","Chr09B","Chr09C","Chr10A","Chr10B","Chr10C","scaffold_144","scaffold_163","scaffold_32","scaffold_490","scaffold_542","scaffold_965"]
 ## high cov scaffolds w sites not filtered out (some lost entirely)
 #CHROM =  ["Chr01A", "Chr01B", "Chr01C", "Chr02A", "Chr02C", "Chr02B", "Chr03A", "Chr03B", "Chr03C", "Chr04A", "Chr04B", "Chr04C", "Chr05A", "Chr05B", "Chr05C", "Chr06A", "Chr06B", "Chr06C", "Chr07A", "Chr07B", "Chr07C", "Chr08A", "Chr08B", "Chr08C", "Chr09A", "Chr09B", "Chr09C", "Chr10A", "Chr10B", "Chr10C", "scaffold_144", "scaffold_163", "scaffold_263", "scaffold_32", "scaffold_490", "scaffold_542", "scaffold_590", "scaffold_64", "scaffold_965"]
 #print(CHROM)
+## just numbers
+CHROM_NUM = ["01","02","03","04","05","06","07","08","09","10"]
 
 # Select working with high or low coverge samples for SNP calling 
 # options = ["highcov", "lowcov"]
@@ -71,8 +75,8 @@ K = list(range(2,22))
 # which chain are we currently running for entropy?
 CHAIN = ["1"]
 
-# Run for ngsF (3 total)
-RUN = ["2","3"]
+# Run for ngsF or STRUCTURE (3 total)
+RUN = ["1","2","3"]
 
 # Population IDs for theta estimateion
 POPS = ["AFT", "AUS","BAR","BOU","CDB","CUI","DES","ESL","FUL","KEN","KON","MAN","MIL","REL","SAL","SUT","TWE","WAL","WEB"]
@@ -80,6 +84,9 @@ POPS = ["AFT", "AUS","BAR","BOU","CDB","CUI","DES","ESL","FUL","KEN","KON","MAN"
 
 # window size for theta estimation
 WINDOW = ["10000", "50000"]
+
+# comparisions for cross population coalescent
+COMPARISION = ["0-1,0-2,5-1,5-2", "0-3,0-4,5-3,5-4", "1-3,1-4,2-3,2-4"]
 
 # Rule all describes the final output of the pipeline
 rule all:
@@ -114,6 +121,7 @@ rule all:
 #         dp_miss = expand("reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.0.99_0_1.txt", chr = CHROM, cov = COV),
 #        grab_snps = expand("data/processed/filtered_snps_bpres/{cov}/all.AG.{cov}.{chr}.filtered.{p}.{miss}.snps.vcf.gz", cov = COV, p = p, miss = miss, chr = CHROM),
 #        grab_gl = expand("data/processed/filtered_snps_bpres/{cov}/all.AG.{cov}.{chr}.PL.txt", cov = COV, chr = CHROM)
+#         get_sites = expand("reports/filtering/depth/{cov}/all.AG.noclones.{cov}.{chr}.filtered.nocall.0.99_0.2.txt", cov = COV, chr = CHROM)
         ## High cov PCA
 #        pca =  expand("data/angsd/pca/highcov.{chrom}.8dp70.beagle.gz", chrom = CHROM)
 #        pcaangsd = "data/angsd/pca/highcov.merged.8dp70.cov"
@@ -122,6 +130,7 @@ rule all:
 #        all_single = "data/angsd/lowcov/all.andro.lowcov.all.positions.ibs.gz",
 #        pca_single = "data/pca/lowcov/all.andro.lowcov.50k.ibs.gz"
 #        pca_single = "data/pca/lowcov/cg.andro.lowcov.50k.ibs.gz"
+        pca_single = "data/pca/lowcov/all.andro.lowcov.miss20.100k.covMat",
         ## Kinship matrix
 #         cg_ibs = "data/pca/lowcov/cg.andro.lowcov.nomiss.ibs.gz"
 #         all_ibs = "data/pca/lowcov/all.andro.lowcov.all.miss20.ibs.gz"
@@ -131,12 +140,13 @@ rule all:
 #         structure = expand("data/structure/cg.lowcov.50k.k{k}.run{run}.75steps.structure_output.txt_f", run = RUN, k = K)
 #         structure = expand("data/structure/all.andro.lowcov.100k.k{k}.run{run}.75steps.structure_output.txt_f", run = RUN, k = K)
 #         structure = expand("data/structure/noinbreds.andro.lowcov.100k.k{k}.run{run}.75steps.structure_output.txt_f", run = RUN, k = K),
+         structure = expand("data/structure/all.andro.noclones.lowcov.100k.k{k}.run{run}.75steps.structure_output.txt_f", run = RUN, k = K),
         ## Diversity stats
 #         subsample_6x = expand("data/final_bams/6x_subsample/{low_geno}_{low_per}.subsample.bam", zip, low_geno = LOW_GENO, low_per = LOW_PER),
 #         qualimap = expand("reports/bamqc/subsampled/{low_geno}_{low_per}_stats/genome_results.txt", zip, low_geno = LOW_GENO, low_per = LOW_PER),
 #         gls =  expand("data/angsd/highcov_6x/highcov_6x_andro.{chrom}.glf.gz", chrom = CHROM),
 #         ngsF = expand("data/angsd/highcov_6x/highcov_6x_andro.{chrom}.run{run}.approx_indF", chrom = CHROM, run = RUN),
-         ngsF_deep = expand("data/angsd/highcov_6x/highcov_6x_andro.{chrom_avail}.run{run}.indF", chrom_avail = CHROM_AVAIL, run = RUN)
+#         ngsF_deep = expand("data/angsd/highcov_6x/highcov_6x_andro.{chrom_avail}.run{run}.indF", chrom_avail = CHROM_AVAIL, run = RUN)
 #         saf = expand("data/angsd/saf/lowcov_6x_andro.{chrom}.50per.saf.gz", chrom = CHROM),
 #         saf = expand("data/angsd/saf/{pops}.{chrom}.50per.saf.gz", chrom = CHROM, pops = POPS),
 #         sfs = expand("data/angsd/saf/{pops}.{chrom}.sfs", chrom = CHROM, pops = POPS),
@@ -144,6 +154,12 @@ rule all:
 #         merge_thetas = expand("data/angsd/saf/{pops}.all.{window}.thetas.idx.pestPG.gz", pops = POPS, window = WINDOW)
         ## Aneuploidy
 #         cov = expand("data/bedtools/coverage/{bam}.1Mb.cov.txt", bam = BAM)
+        ## MSMC2
+#         prep =  expand("data/msmc/input/{chr}.H1vH2.multihetsep.txt", chr = CHROM_NOSCAFF),
+#         msmc = expand("data/msmc/output/{chr}.H1vH2.27-2-3.final.txt", chr = CHROM_NOSCAFF),
+#         make_db = expand(directory("data/msmc/combined_database_bpres/{chr}"), chr = CHROM_NUM),
+#         merge_gvcfs = expand("data/msmc/input/{chr}.crosspops.gvcf", chr = CHROM_NUM),
+#         prep_cross = expand("data/msmc/input/{chr}.crosspops.multihetsep.txt", chr = CHROM_NUM)
 
 ## Rules
 #include: "rules/mapping.smk"
@@ -153,5 +169,6 @@ rule all:
 #include: "rules/calling.smk"
 #include: "rules/filtering.smk"
 #include: "rules/gl_calling.smk"
-#include: "rules/pop_struc.smk"
-include: "rules/pop_struc_highcov.smk"
+include: "rules/pop_struc.smk"
+#include: "rules/pop_struc_highcov.smk"
+#include: "rules/subgenomes.smk"

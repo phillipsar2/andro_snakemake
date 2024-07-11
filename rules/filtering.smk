@@ -76,14 +76,30 @@ rule filter_nocall:
         shell("gatk SelectVariants -V {input.vcf} --exclude-filtered true  --restrict-alleles-to BIALLELIC -O {output}")
         
 
+# (4b) Exclude clones
+# Clones were identified by looking at the kinship matrix using all genotypes.
+rule exclude_clones:
+    input:
+        vcf = "data/processed/filtered_snps_bpres/{cov}/all.AG.{cov}.{chr}.filtered.nocall.vcf",
+        ref = config.ref,
+        clones = "clones.list"
+    output:
+        vcf = "data/processed/filtered_snps_bpres/{cov}/all.AG.noclones.{cov}.{chr}.filtered.nocall.vcf",
+    shell:
+        """
+        vcftools --vcf {input.vcf} --remove {input.clones} --stdout > {output.vcf}
+        """ 
+
 # (5) Evaluate depth across samples to set DP filter
 
 rule depth:
     input:
-        vcf = "data/processed/filtered_snps_bpres/{cov}/all.AG.{cov}.{chr}.filtered.nocall.vcf",
+#        vcf = "data/processed/filtered_snps_bpres/{cov}/all.AG.{cov}.{chr}.filtered.nocall.vcf",
+        vcf = "data/processed/filtered_snps_bpres/{cov}/all.AG.noclones.{cov}.{chr}.filtered.nocall.vcf",
         ref = config.ref
     output:
-        dp = "reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.table"
+#        dp = "reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.table"
+        dp = "reports/filtering/depth/{cov}/all.AG.noclones.{cov}.{chr}.filtered.nocall.table"
     run:
         shell("gatk VariantsToTable \
         -R {input.ref} \
@@ -93,37 +109,42 @@ rule depth:
         -O {output.dp}")
 
 
+
 # (6) Filter by genotype depth and missingness
+# p = probability of the given read depth
+# miss = percent missing data threshold at a site
+# min = minimum depth for a genotype at a site
 rule filter_depth:
     input:
-        vcf = "reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.table"
+#        vcf = "reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.table"
+        vcf = "reports/filtering/depth/{cov}/all.AG.noclones.{cov}.{chr}.filtered.nocall.table"
     output:
 #        "reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.0.99_0.2.txt"
-#        "reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.0.99_0.2_8.txt"
-         "reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.0.99_0_1.txt"
+        "reports/filtering/depth/{cov}/all.AG.noclones.{cov}.{chr}.filtered.nocall.0.99_0.2.txt"
     params:
 #        p = "{p}",
 #        miss = "{miss}"
         p = "0.99",
-        miss = "0",
-#        miss = "0.2",
+        miss = "0.2",
         min = "1"
     shell:
         "Rscript scripts/genoDPfilter.R {input.vcf} -q {params.p} -m {params.miss} --min {params.min}"
 
-# (7) grab SNPs from the vcf
+#[skip - go straight to angsd with positons] (7) grab SNPs from the vcf
 # needs a tab deliminated list of file containing regions to select
 rule keep_snps:
     input:
-        snps = "reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.0.99_0.2_8.txt",
-        vcf = "data/processed/filtered_snps_bpres/{cov}/all.AG.{cov}.{chr}.filtered.nocall.vcf.gz"
-    params:
-        gz = "data/processed/filtered_snps_bpres/{cov}/all.AG.{cov}.{chr}.filtered.nocall.vcf"
+#        snps = "reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.0.99_0.2_8.txt",
+#        vcf = "data/processed/filtered_snps_bpres/{cov}/all.AG.{cov}.{chr}.filtered.nocall.vcf.gz"
+        snps = "reports/filtering/depth/{cov}/all.AG.noclones.{cov}.{chr}.filtered.nocall.0.99_0.2.txt",
+        vcf = "data/processed/filtered_snps_bpres/{cov}/all.AG.noclones.{cov}.{chr}.filtered.nocall.vcf"
+#    params:
+#        gz = "data/processed/filtered_snps_bpres/{cov}/all.AG.{cov}.{chr}.filtered.nocall.vcf"
     output:
         "data/processed/filtered_snps_bpres/{cov}/all.AG.{cov}.{chr}.filtered.{p}.{miss}.snps.vcf.gz"
     shell:
         """
-        gunzip {input.vcf}
+       # gunzip {input.vcf}
         bgzip {params.gz}
         tabix -p vcf {input.vcf}
         bcftools view -R {input.snps} -Oz -o {output} {input.vcf}

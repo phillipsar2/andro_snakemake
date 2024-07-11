@@ -1,6 +1,6 @@
 #!/bin/bash
 
-snakemake --jobs 100 --use-conda \
+snakemake --jobs 60 --use-conda \
 --rerun-incomplete \
 --latency-wait 120 \
 --cluster-config submit.json \

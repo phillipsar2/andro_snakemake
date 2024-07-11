@@ -96,12 +96,12 @@
       "time" : "14-00:00",
       "name" : "gl_mat",
     },
-    "entropy" :
+    "PCA_single" :
     {
-      "mem": "8G",
-      "p" : "bigmemm",
+      "mem": "48G",
+      "p" : "bigmemh",
       "time" : "30-00:00",
-      "name" : "entropy",
+      "name" : "PCA_single",
     },
     "get_cov" :
     {
@@ -151,5 +151,26 @@
       "p" : "high2",
       "time" : "30-00:00",
       "name" : "pop_pi",
+    },
+    "msmc2" :
+    {
+      "p" : "high2",
+      "mem" : "400G",
+      "time" : "30-00:00",
+      "name " : "msmc2",
+    },
+    "make_db" :
+    {
+      "p" : "high2",
+      "mem" : "48G",
+      "time" : "30-00:00",
+      "name " : "make_db",
+    },
+    "prep_crosspop" :
+    {
+      "p" : "high2",
+      "mem" : "8G",
+      "time" : "30-00:00",
+      "name " : "prep_crosspop",
     }
 }
