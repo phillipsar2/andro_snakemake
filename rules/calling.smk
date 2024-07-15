@@ -1,5 +1,4 @@
-# index
-
+# (8) Index bams
 rule index:
     input:
         "data/final_bams/lowcov/{bam}.dedup.bam"
@@ -11,9 +10,7 @@ rule index:
         """
         samtools index {input}
         """
-
-## Potentially calling snps with bcftools because we just want to get read counts
-# calling SNPs for the population panel then calculating quality and depth statistics for filtering
+# (9) Call snps initially with bcftools to identify variable sites
 rule mpileup:
     input:
         ref = config.ref,
@@ -37,7 +34,7 @@ rule mpileup:
         bcftools call -mv -Oz -o {output.vcf}")
         shell("bcftools index -t {output}")
 
-# select samples to keep from the vcfs
+# (10) Subset genotypes to those needed for specific analyses or drop those that have poor quality or no genome size data
 rule drop_samples:
     input:
         samp_list = "data/vcf/lowcov/all.AG.samples",
@@ -50,8 +47,7 @@ rule drop_samples:
         bcftools index -t {output}
         """
 
-
-# merge vcfs that samples were dropped from and combine with new ucd vcfs
+# (11) Merge vcfs with new UCD vcf from re-sequenced samples
 rule merge_vcfs:
     input:
         ucd = "data/vcf/lowcov/ucd.lowcov.{chr}.raw.vcf.gz",

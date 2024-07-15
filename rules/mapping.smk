@@ -24,10 +24,7 @@ rule fastp_trim:
         --trim_front1 9 --trim_front2 9 \
         -j {output.r}")
 
-
-#### #### ####
-
-# Align reads to the reference genome
+# (3) Align reads to the reference genome
 # bwa-mem2/2.2.1_x64-linux
 rule bwa_map:
     input:
@@ -50,7 +47,7 @@ rule bwa_map:
         "bwa-mem2 mem -t {threads} {input.ref} {input.r1} {input.r2} |"
         "samtools view -Sb > {output}"
 
-# Takes the input file and stores a sorted version in a different directory.
+# (4) Sort bams
 rule samtools_sort:
     input:
         "data/interm/mapped_bam/{sample}.mapped.bam"
@@ -64,6 +61,7 @@ rule samtools_sort:
         shell("samtools sort -T {params.tmp} -@ {threads} {input} > {output}")
         shell("rm -rf {params.tmp}")
 
+# (5) Add read groups
 rule add_rg:
     input:
         "data/interm/sorted_bam/{sample}.sorted.bam"
@@ -86,6 +84,7 @@ rule add_rg:
         --CREATE_INDEX true")
         shell("rm -rf {params.tmp}")
 
+# (6) Mark duplicates
 rule mark_dups:
     input:
         "data/interm/addrg/{sample}.rg.bam"
@@ -109,7 +108,7 @@ rule mark_dups:
         # Remove scratch directory
         shell("rm -rf {params.tmp}")
 
-# Quality metrics with qualimap
+# (7) Assess alignment quality metrics with qualimap
 # nr is normally 100000 and -nt is normally 8, java mem size = 48
 # nw is normally 400
 # for higher cov, make nr 1000 and -nt 12, java mem size = 64

@@ -1,4 +1,4 @@
-# Index vcfs
+# (12) Index gvcfs
 rule index_vcfs:
     input:
         "data/vcf/{cov}/all.AG.{cov}.{chr}.raw.vcf.gz"
@@ -7,8 +7,7 @@ rule index_vcfs:
     run:
         shell("bcftools index -t {input}")
 
-# (1) Extract SNPs from each gvcf
-
+# (13) Extract SNPs from each gvcf
 rule get_snps:
     input:
         ref = config.ref,
@@ -23,10 +22,8 @@ rule get_snps:
         -O {output}")
 
 
-# (2) Filtering diagnostics
-# Extract variant quality scores
-# https://evodify.com/gatk-in-non-model-organism/
-
+# (14) Filtering diagnostics - extract variant quality scores
+# Roughly following suggestions in https://evodify.com/gatk-in-non-model-organism/
 rule diagnostics:
     input:
 #        vcf = "data/raw/vcf_bpres/subsample/{vcf}.p{ploidy}.subsample.raw.snps.vcf"
@@ -43,13 +40,11 @@ rule diagnostics:
         -O {output}
         """
 
-# (3) Hard filter SNPs
+# (15) Hard filter SNPs
 # https://gatk.broadinstitute.org/hc/en-us/articles/360035531112?id=23216#2
 # https://gatk.broadinstitute.org/hc/en-us/articles/360037499012?id=3225
 
-
 # Hard filter for mapping quality and base quality
-
 rule filter_snps:
     input:
         ref = config.ref,
@@ -64,8 +59,7 @@ rule filter_snps:
         -O {output}")
 
 
-# (4) Filter SNPs to only biallelic sites and exclude the sites that failed the hard filter
-
+# (16) Filter SNPs to only biallelic sites and exclude the sites that failed the hard filter
 rule filter_nocall:
     input:
         ref = config.ref,
@@ -76,7 +70,7 @@ rule filter_nocall:
         shell("gatk SelectVariants -V {input.vcf} --exclude-filtered true  --restrict-alleles-to BIALLELIC -O {output}")
         
 
-# (4b) Exclude clones
+# (17) Exclude clones
 # Clones were identified by looking at the kinship matrix using all genotypes.
 rule exclude_clones:
     input:
@@ -90,8 +84,7 @@ rule exclude_clones:
         vcftools --vcf {input.vcf} --remove {input.clones} --stdout > {output.vcf}
         """ 
 
-# (5) Evaluate depth across samples to set DP filter
-
+# (18) Extract genotype depth across samples to determine DP cutoff
 rule depth:
     input:
 #        vcf = "data/processed/filtered_snps_bpres/{cov}/all.AG.{cov}.{chr}.filtered.nocall.vcf",
@@ -108,9 +101,7 @@ rule depth:
         -GF DP \
         -O {output.dp}")
 
-
-
-# (6) Filter by genotype depth and missingness
+# (19) Filter by genotype depth and missingness
 # p = probability of the given read depth
 # miss = percent missing data threshold at a site
 # min = minimum depth for a genotype at a site
@@ -119,6 +110,7 @@ rule filter_depth:
 #        vcf = "reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.table"
         vcf = "reports/filtering/depth/{cov}/all.AG.noclones.{cov}.{chr}.filtered.nocall.table"
     output:
+        ## Output used to select sites in ANGSD
 #        "reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.0.99_0.2.txt"
         "reports/filtering/depth/{cov}/all.AG.noclones.{cov}.{chr}.filtered.nocall.0.99_0.2.txt"
     params:
@@ -130,33 +122,3 @@ rule filter_depth:
     shell:
         "Rscript scripts/genoDPfilter.R {input.vcf} -q {params.p} -m {params.miss} --min {params.min}"
 
-#[skip - go straight to angsd with positons] (7) grab SNPs from the vcf
-# needs a tab deliminated list of file containing regions to select
-rule keep_snps:
-    input:
-#        snps = "reports/filtering/depth/{cov}/all.AG.{cov}.{chr}.filtered.nocall.0.99_0.2_8.txt",
-#        vcf = "data/processed/filtered_snps_bpres/{cov}/all.AG.{cov}.{chr}.filtered.nocall.vcf.gz"
-        snps = "reports/filtering/depth/{cov}/all.AG.noclones.{cov}.{chr}.filtered.nocall.0.99_0.2.txt",
-        vcf = "data/processed/filtered_snps_bpres/{cov}/all.AG.noclones.{cov}.{chr}.filtered.nocall.vcf"
-#    params:
-#        gz = "data/processed/filtered_snps_bpres/{cov}/all.AG.{cov}.{chr}.filtered.nocall.vcf"
-    output:
-        "data/processed/filtered_snps_bpres/{cov}/all.AG.{cov}.{chr}.filtered.{p}.{miss}.snps.vcf.gz"
-    shell:
-        """
-       # gunzip {input.vcf}
-        bgzip {params.gz}
-        tabix -p vcf {input.vcf}
-        bcftools view -R {input.snps} -Oz -o {output} {input.vcf}
-        """
-
-
-# Combine interval vcfs with bcftools
-
-#rule combine_vcfs:
-#    input:
-#        expand("data/processed/filtered_snps_bpres/subsample/{vcf}.p{ploidy}.subsample.filtered.3dp100.nocall.snps.vcf.gz", interval = INTERVALS, REF=REF)
-#    output:
-#        "data/processed/filtered_snps_bpres/{REF}/oryza.{REF}.vcf.gz"
-#    run:
-#        shell("bcftools concat {input} -Oz -o {output}")
