@@ -1,8 +1,4 @@
-###
-### Troubleshooting batch effect
-###
-
-# (1) evaluate quality of raw reads with fastqc
+# (1) Evaluate quality of raw reads with fastqc
 # scripts/fastqc.sh
 
 # (2) Trim reads sequenced at UCD with fastp
