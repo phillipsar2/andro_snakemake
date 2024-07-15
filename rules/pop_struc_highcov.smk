@@ -1,7 +1,12 @@
-### ANGSD analyses on 6x high coverage individuals
-### PCA --------
+# Analyses on 6x high coverage individuals
 
-# (1) generate GL in beagle format
+###
+### PCA
+###
+
+# Run for verification that single-read PCA is correct
+
+# (1) Estimate GL in beagle format
 # doMajorMinor 4: use refence allele as major
 rule angsd_beagle:
     input:
@@ -26,17 +31,17 @@ rule angsd_beagle:
         -bam {input.bamlist} \
         -out {params.prefix}")
 
-# (2) merge beagle files together
+# (2) Merge beagle files together
 #        shell("cat <(zcat data/angsd/pca/*beagle.gz | head -n1) <(zcat data/angsd/pca/*beagle.gz | \
 #        grep -v marker) > data/angsd/pca/highcov.merged.8dp70.beagle
 #        shell("gzip data/angsd/pca/highcov.merged.8dp70.beagle")
 
-# (3) grab 30k random snps
+# (3) Grab 30k random snps
 #        zcat highcov.merged.8dp70.beagle.gz | head -n1 > highcov.merged.8dp70.30k.beagle
 #        shuf -n 30000 <(zcat highcov.merged.8dp70.beagle.gz) >> highcov.merged.8dp70.30k.beagle
 #        gzip highcov.merged.8dp70.30k.beagle
 
-# (4) run PCA
+# (4) Run PCA
 rule angsd_pca:
     input:
         beagle = expand("data/angsd/pca/highcov.merged.8dp70.30k.beagle.gz", chrom = CHROM)
@@ -51,10 +56,10 @@ rule angsd_pca:
 
 
 ###
-### Inbreeding in 6x
+### Estimate the inbreeding coefficient (Fis)
 ###
 
-# (1) call genotype likelihoods with ANGSD
+# (1) Call genotype likelihoods with ANGSD
 
 # -doGlf 3 required for ngsF - binary 3 times likelihood (.glf.gz)
 # -GL 1 - SAMtools GL model
@@ -152,59 +157,4 @@ rule ngsF_deep:
         --n_threads 52 \
         """
 
-###
-### Fst in 6x
-###
-
-# (1) Estimate SAF for each population
-# -dosaf 1 perform multisample GL estimation
-# -anc reference provided as ancestral state; will use folded spectrum
-
-rule doSAF:
-    input:
-        ref = config.ref,
-        bamlist = "data/final_bams/highcov/highcov.{pop}.6x.bamlist"
-    output:
-        "data/angsd/highcov_6x/{pop}.{chrom}.saf.idx"
-    params:
-        prefix = "data/angsd/highcov_6x/{pop}.{chrom}",
-        chrom = "{chrom}"
-    shell:
-        """
-        angsd \
-        -GL 1 -P 15 \
-        -dosaf 1 \ 
-        -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -trim 0 -C 50 \
-        -minMapQ 30 -minQ 30 \
-        -doCounts 1 -setMinDepthInd 8 -setMaxDepthInd 70 \
-        -b {input.bamlist} \
-        -r {params.chrom} \
-        -doMaf 1 \
-        -doMajorMinor 4 \
-        -ref {input.ref} \
-        -anc {input.ref} \
-        -out {params.prefix}
-        """
-
-# (2) Estiamte pairwise 2D SFS for each pairwise comparision
-
-rule 2dsfs:
-    input:
-        pop1 = "data/angsd/highcov_6x/{pop_pair1}.{chrom}.saf.idx",
-        pop2 = "data/angsd/highcov_6x/{pop_pair2}.{chrom}.saf.idx"
-    output:
-        "data/angsd/highcov_6x/{pop_pair1}.{pop_pair2}.ml"
-    params:
-        chrom = "{chrom}"
-    shell:
-        """
-        realSFS {input.pop1} {input.pop2} \
-        -P 16 \
-        -r {params.chrom} \
-        -fold 1 \
-        > {output}
-        """
-
-# (3) prep results for easy analysis
-
-# (4) Calculate global esimate
+# (4) Plot in R - bigblue_Fis.R

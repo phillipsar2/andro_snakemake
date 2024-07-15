@@ -1,5 +1,5 @@
-# Merge bams files
-# Some genotypes were sequenced multiple times. The individual runs were seperately aligned to the genome. Next, we merge the bam files together so there is one bam per genotype.
+# (8) Merge bams files for genotypes were sequenced multiple times. 
+# Individual runs were seperately aligned to the genome.
 rule merge_bams:
     input:
         A = "data/interm/mark_dups/{merge_A}.dedup.bam",
@@ -11,7 +11,7 @@ rule merge_bams:
         samtools merge {output} {input.A} {input.B}
         """
 
-# Add read groups to merged bams
+# (9) Add read groups to merged bams
 rule add_rg:
     input:
         "data/interm/mark_dups/{geno}.{merge_A}.{merge_B}.merged.dedup.bam"
@@ -34,7 +34,7 @@ rule add_rg:
         --CREATE_INDEX true")
         shell("rm -rf {params.tmp}")
 
-# Subsample high coverage bams
+# (10) Subsample high coverage bams to low coverage
 ## subsample high coverage bams (avg cov = 29X) to 2X coverage. 2/29 = 0.06
 #rule subsample:
 #    input:
@@ -46,7 +46,7 @@ rule add_rg:
 #        samtools view -b -s 0.06 {input} > {output}
 #        """
 
-# Quality metrics with qualimap of subsampled bams
+# (11) Re-run quality metrics with qualimap of subsampled bams
 # nr is normally 100000 and -nt is normally 8, java mem size = 48
 # nw is normally 400
 # for higher cov, make nr 1000 and -nt 12, java mem size = 64
@@ -71,7 +71,7 @@ rule bamqc:
         --skip-duplicated \
         --java-mem-size=20G")    
 
-# Subsample low coverage 6x bams to even coverage
+# (12) Subsample low coverage 6x bams to even coverage
 # Goal is 0.5-1.5X coverage, only subsampling the genotypes not within that range
 rule subsample_6x:
     input:

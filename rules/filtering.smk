@@ -1,4 +1,4 @@
-# (12) Index gvcfs
+# (17) Index gvcfs
 rule index_vcfs:
     input:
         "data/vcf/{cov}/all.AG.{cov}.{chr}.raw.vcf.gz"
@@ -7,7 +7,7 @@ rule index_vcfs:
     run:
         shell("bcftools index -t {input}")
 
-# (13) Extract SNPs from each gvcf
+# (18) Extract SNPs from each gvcf
 rule get_snps:
     input:
         ref = config.ref,
@@ -22,7 +22,7 @@ rule get_snps:
         -O {output}")
 
 
-# (14) Filtering diagnostics - extract variant quality scores
+# (19) Filtering diagnostics - extract variant quality scores
 # Roughly following suggestions in https://evodify.com/gatk-in-non-model-organism/
 rule diagnostics:
     input:
@@ -40,7 +40,7 @@ rule diagnostics:
         -O {output}
         """
 
-# (15) Hard filter SNPs
+# (20) Hard filter SNPs
 # https://gatk.broadinstitute.org/hc/en-us/articles/360035531112?id=23216#2
 # https://gatk.broadinstitute.org/hc/en-us/articles/360037499012?id=3225
 
@@ -59,7 +59,7 @@ rule filter_snps:
         -O {output}")
 
 
-# (16) Filter SNPs to only biallelic sites and exclude the sites that failed the hard filter
+# (21) Filter SNPs to only biallelic sites and exclude the sites that failed the hard filter
 rule filter_nocall:
     input:
         ref = config.ref,
@@ -70,7 +70,7 @@ rule filter_nocall:
         shell("gatk SelectVariants -V {input.vcf} --exclude-filtered true  --restrict-alleles-to BIALLELIC -O {output}")
         
 
-# (17) Exclude clones
+# (22) Exclude clones
 # Clones were identified by looking at the kinship matrix using all genotypes.
 rule exclude_clones:
     input:
@@ -84,7 +84,7 @@ rule exclude_clones:
         vcftools --vcf {input.vcf} --remove {input.clones} --stdout > {output.vcf}
         """ 
 
-# (18) Extract genotype depth across samples to determine DP cutoff
+# (23) Extract genotype depth across samples to determine DP cutoff
 rule depth:
     input:
 #        vcf = "data/processed/filtered_snps_bpres/{cov}/all.AG.{cov}.{chr}.filtered.nocall.vcf",
@@ -101,7 +101,7 @@ rule depth:
         -GF DP \
         -O {output.dp}")
 
-# (19) Filter by genotype depth and missingness
+# (24) Filter by genotype depth and missingness
 # p = probability of the given read depth
 # miss = percent missing data threshold at a site
 # min = minimum depth for a genotype at a site
@@ -121,4 +121,3 @@ rule filter_depth:
         min = "1"
     shell:
         "Rscript scripts/genoDPfilter.R {input.vcf} -q {params.p} -m {params.miss} --min {params.min}"
-

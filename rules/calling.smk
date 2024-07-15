@@ -1,4 +1,4 @@
-# (8) Index bams
+# (13) Index bams
 rule index:
     input:
         "data/final_bams/lowcov/{bam}.dedup.bam"
@@ -10,7 +10,7 @@ rule index:
         """
         samtools index {input}
         """
-# (9) Call snps initially with bcftools to identify variable sites
+# (14) Call snps initially with bcftools to identify variable sites
 rule mpileup:
     input:
         ref = config.ref,
@@ -34,7 +34,7 @@ rule mpileup:
         bcftools call -mv -Oz -o {output.vcf}")
         shell("bcftools index -t {output}")
 
-# (10) Subset genotypes to those needed for specific analyses or drop those that have poor quality or no genome size data
+# (15) Subset genotypes to those needed for specific analyses or drop those that have poor quality or no genome size data
 rule drop_samples:
     input:
         samp_list = "data/vcf/lowcov/all.AG.samples",
@@ -47,7 +47,7 @@ rule drop_samples:
         bcftools index -t {output}
         """
 
-# (11) Merge vcfs with new UCD vcf from re-sequenced samples
+# (16) Merge vcfs with new UCD vcf from re-sequenced samples
 rule merge_vcfs:
     input:
         ucd = "data/vcf/lowcov/ucd.lowcov.{chr}.raw.vcf.gz",

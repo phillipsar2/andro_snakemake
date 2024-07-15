@@ -63,14 +63,14 @@ rule PCA_single:
         -doIBS 1 \
         -out {params.prefix}")
 
-# (4) Plot in R - scripts local
+# (4) Plot in R - scripts/singleread_pca.R
 
 
 ###
 ### Kinship matrix for low coverage common garden ind
 ###
 
-# (1) extract single reads positions that have all individuals present (no missing data)
+# (1) Extract single reads positions that have all individuals present (no missing data)
 # sites file must contain the major and minor (ref and alt) allele
 rule cg_ibs:
     input:
@@ -118,12 +118,15 @@ rule all_ibs:
         -doIBS 1 \
         -out {params.prefix}")
 
-# (2) Estimate kinship matrix in custom script in R
+# (2) Estimate kinship matrix - scripts/kinship_matrix.R
 
 ###
 ### STRUCTURE 
 ###
 
+# Input files and output plots generated with scripts/bigblue_STRUCTURE_plots.R
+
+# (1) Run STRUCTURE
 rule structure:
     input:
         ## Common garden
@@ -243,45 +246,5 @@ rule merge_pi:
         gzip > {output}
         """
 
-###
-### Heterozygosity - 6x only
-###
+## (5) Plot in R - scripts/bigblue_thetas.R
 
-## (1) Estimate the folded SFS for all hexaploids range-wide
-### Heterozygosity is the second bin of the SFS
-# -minInd 106 is 20% missing data per site
-# -fold 1 estimate folded SFS
-rule all_saf:
-    input:
-        ref = config.ref,
-        bamlist = "data/final_bams/6x_subsample/bamlists/all.6x.bamlist"
-    output:
-        "data/angsd/saf/all.6x.{chrom}.saf.gz"
-    params:
-        prefix = "data/angsd/saf/{pops}.{chrom}.",
-        chrom = "{chrom}"
-    shell:
-        """
-        angsd \
-        -GL 1 -P 15 \
-        -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -trim 0 -C 50 \
-        -minMapQ 30 -minQ 30 \
-        -doCounts 1 -setMinDepthInd 1 -setMaxDepthInd 6 \
-        -b {input.bamlist} \
-        -r {params.chrom} \
-        -minInd 106
-        -ref {input.ref} -anc {input.ref} \
-        -doSaf 1 \
-        -fold 1 \
-        -out {params.prefix}
-        """
-
-rule all_sfs:
-     input:
-         "data/angsd/saf/all.6x.{chrom}.saf.idx"
-     output:
-         "data/angsd/saf/all.6x.{chrom}.est.ml"
-     shell:
-         """
-         realSFS {input} > {output}
-         """

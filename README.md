@@ -8,7 +8,6 @@ The majority of the methods are encapsulated in a [Snakemake](https://snakemake.
 <pre>
 ├── README.md <- The top-level README.md for Andropogon or polyploidy enthusiasts that want to replicate these analyses.   
 ├── rules
-|   ├── angsd.smk
 |   ├── calling.smk
 |   ├── determine_ploidy.smk
 |   ├── filtering.smk
